@@ -1,31 +1,27 @@
-// app/api/subtopics/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Subtopic from '@/models/Subtopic';
-import { Document } from 'mongoose';
-
-interface MongooseDoc extends Document {
-  _id: any;
-  __v?: number;
-}
+import { auth } from "@/auth";
 
 export async function POST(request: Request) {
-  await dbConnect();
-  try {
-    const body = await request.json();
-    const newSubtopic = new Subtopic(body);
-    await newSubtopic.save();
-    
-    const savedSubtopic = newSubtopic.toObject() as MongooseDoc & { goalId: any };
-    const { _id, __v, goalId, ...rest } = savedSubtopic;
-    return NextResponse.json({
-      ...rest,
-      id: _id.toString(),
-      goalId: goalId.toString()
-    }, { status: 201 });
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-    return NextResponse.json(savedSubtopic, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create subtopic' }, { status: 500 });
-  }
+        await dbConnect();
+        const body = await request.json();
+        const subtopic = await Subtopic.create({ ...body, userId: session.user.id });
+
+        const serializedSubtopic = {
+            ...subtopic.toObject(),
+            id: (subtopic._id as any).toString(),
+            _id: undefined
+        };
+
+        return NextResponse.json(serializedSubtopic, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to create subtopic' }, { status: 500 });
+    }
 }

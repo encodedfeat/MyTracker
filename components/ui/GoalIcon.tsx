@@ -12,14 +12,16 @@ interface GoalIconProps extends LucideProps {
 
 export const GoalIcon: React.FC<GoalIconProps> = ({ iconName, className, ...props }) => {
   switch (iconName) {
-    case 'Target': return <Target {...props} />;
-    case 'Zap': return <Zap {...props} />;
-    case 'Brain': return <Brain {...props} />;
-    case 'BookOpen': return <BookOpen {...props} />;
-    case 'Code': return <Code {...props} />;
-    case 'Activity': return <Activity {...props} />;
-    case 'Award': return <Award {...props} />;
-    case 'Star': return <Star {...props} />;
-    default: return <Target {...props} />;
+    case 'Target': return <Target className={className} {...props} />;
+    case 'Zap': return <Zap className={className} {...props} />;
+    case 'Brain': return <Brain className={className} {...props} />;
+    case 'BookOpen': return <BookOpen className={className} {...props} />;
+    case 'Code': return <Code className={className} {...props} />;
+    case 'Activity': return <Activity className={className} {...props} />;
+    case 'Award': return <Award className={className} {...props} />;
+    case 'Star': return <Star className={className} {...props} />;
+    default: return <Target className={className} {...props} />;
   }
 };
+
+

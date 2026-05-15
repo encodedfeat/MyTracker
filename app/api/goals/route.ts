@@ -1,28 +1,27 @@
-// app/api/goals/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import Goal, { IGoal } from '@/models/Goal';
-import { Document } from 'mongoose';
-
-interface MongooseDoc extends Document {
-  _id: any;
-  __v?: any;
-}
+import Goal from '@/models/Goal';
+import { auth } from "@/auth";
 
 export async function POST(request: Request) {
-  try {
-    await dbConnect();
-    const body = await request.json();
-    const { name, icon, month, year } = body;
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-    const newGoal = new Goal({ name, icon, month, year });
-    await newGoal.save();
+        await dbConnect();
+        const body = await request.json();
+        const goal = await Goal.create({ ...body, userId: session.user.id });
 
-    const savedGoal = newGoal.toObject() as MongooseDoc & IGoal;
-    const { _id, __v, ...rest } = savedGoal;
+        const serializedGoal = {
+            ...goal.toObject(),
+            id: (goal._id as any).toString(),
+            _id: undefined
+        };
 
-    return NextResponse.json({ ...rest, id: _id.toString() }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create goal' }, { status: 500 });
-  }
+        return NextResponse.json(serializedGoal, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to create goal' }, { status: 500 });
+    }
 }

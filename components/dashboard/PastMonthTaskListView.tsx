@@ -82,7 +82,7 @@ export function PastMonthTaskListView({ goals, subtopics, tasks }: PastMonthTask
 
     return (
         <div className="mt-12 animate-fadeIn">
-            <h2 className="text-3xl font-bold text-white mb-8 border-b border-slate-800 pb-4">
+            <h2 className="text-3xl font-bold text-black mb-8 border-b border-black pb-4">
                 Your Categories
             </h2>
 
@@ -93,10 +93,10 @@ export function PastMonthTaskListView({ goals, subtopics, tasks }: PastMonthTask
                     if (goalSubtopics.length === 0) return null;
 
                     return (
-                        <div key={goal.id} className="bg-slate-900/50 rounded-xl p-6 border border-slate-800">
+                        <div key={goal.id} className="bg-white/50 rounded-xl p-6 border border-black">
                             <div className="flex items-center space-x-3 mb-6">
                                 <span className="text-2xl">{goal.icon}</span>
-                                <h3 className="text-xl font-semibold text-white">{goal.name}</h3>
+                                <h3 className="text-xl font-semibold text-black">{goal.name}</h3>
                             </div>
 
                             <div className="space-y-6">
@@ -106,13 +106,13 @@ export function PastMonthTaskListView({ goals, subtopics, tasks }: PastMonthTask
                                     if (subtopicTasks.length === 0) return null;
 
                                     return (
-                                        <div key={subtopic.id} className="bg-black/40 rounded-lg p-4">
-                                            <h4 className="text-indigo-400 font-medium mb-3 uppercase text-sm tracking-wider">
+                                        <div key={subtopic.id} className=" rounded-lg p-4">
+                                            <h4 className="text-black font-bold font-medium mb-3 uppercase text-sm tracking-wider">
                                                 {subtopic.name}
                                             </h4>
                                             <ul className="space-y-2">
                                                 {subtopicTasks.map(task => (
-                                                    <li key={task.id} className="flex items-start space-x-2 text-slate-300">
+                                                    <li key={task.id} className="flex items-start space-x-2 text-slate-800">
                                                         <span className="mt-1.5 w-1.5 h-1.5 bg-slate-500 rounded-full flex-shrink-0" />
                                                         <span className={task.completed ? "line-through text-slate-500" : ""}>
                                                             {task.name}
@@ -131,3 +131,6 @@ export function PastMonthTaskListView({ goals, subtopics, tasks }: PastMonthTask
         </div>
     );
 }
+
+
+

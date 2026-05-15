@@ -6,7 +6,7 @@ export interface IGoal extends Document {
   icon: string;
   month?: number;
   year?: number;
-  // We will add user ID here later if we add authentication
+  userId: string;
 }
 
 const GoalSchema = new Schema<IGoal>({
@@ -26,8 +26,13 @@ const GoalSchema = new Schema<IGoal>({
     type: Number,
     required: false, // Optional for now to allow migration
   },
+  userId: {
+    type: String,
+    required: true,
+    index: true,
+  },
 });
 
-const Goal: Model<IGoal> = models.Goal || mongoose.model<IGoal>('Goal', GoalSchema);
+const Goal: Model<IGoal> = mongoose.models?.Goal || mongoose.model<IGoal>('Goal', GoalSchema);
 
 export default Goal;

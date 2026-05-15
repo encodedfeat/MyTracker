@@ -1,43 +1,30 @@
-// app/api/logs/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Log from '@/models/Log';
-import { Document } from 'mongoose';
-
-interface MongooseDoc extends Document {
-  _id: any;
-  __v?: number;
-}
+import { auth } from "@/auth";
 
 export async function POST(request: Request) {
-  await dbConnect();
-  try {
-    // We expect { subtopicId, date, value }
-    const { subtopicId: stId, date: dateString, value } = await request.json();
-    
-    // Convert string date to Date object at midnight UTC
-    const targetDate = new Date(dateString);
-    targetDate.setUTCHours(0, 0, 0, 0);
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-    const newLog = new Log({
-      subtopicId: stId,
-      date: targetDate,
-      value: Number(value),
-    });
-    
-    await newLog.save();
-    
-    const savedLog = newLog.toObject() as MongooseDoc & { subtopicId: any; date: Date };
-    const { _id, __v, subtopicId, date, ...rest } = savedLog;
-    return NextResponse.json({
-      ...rest,
-      id: _id.toString(),
-      subtopicId: subtopicId.toString(),
-      date: date.toISOString().split('T')[0]
-    }, { status: 201 });
+        await dbConnect();
+        const body = await request.json();
+        const log = await Log.create({ ...body, userId: session.user.id });
 
-    return NextResponse.json(savedLog, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create log' }, { status: 500 });
-  }
+        // Serialize manually to ensure date format matches
+        const serializedLog = {
+            ...log.toObject(),
+            id: log._id.toString(),
+            _id: undefined,
+            subtopicId: log.subtopicId.toString(),
+            date: log.date.toISOString().split('T')[0]
+        };
+
+        return NextResponse.json(serializedLog, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to create log' }, { status: 500 });
+    }
 }

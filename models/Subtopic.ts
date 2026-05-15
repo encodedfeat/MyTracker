@@ -6,6 +6,7 @@ export interface ISubtopic extends Document {
   name: string;
   type: 'habit' | 'cumulative' | 'tasks';
   target?: number;
+  userId: string;
 }
 
 const SubtopicSchema = new Schema<ISubtopic>({
@@ -27,8 +28,13 @@ const SubtopicSchema = new Schema<ISubtopic>({
     type: Number,
     required: false, // Only required for 'cumulative'
   },
+  userId: {
+    type: String,
+    required: true,
+    index: true,
+  },
 });
 
-const Subtopic: Model<ISubtopic> = models.Subtopic || mongoose.model<ISubtopic>('Subtopic', SubtopicSchema);
+const Subtopic: Model<ISubtopic> = mongoose.models?.Subtopic || mongoose.model<ISubtopic>('Subtopic', SubtopicSchema);
 
 export default Subtopic;

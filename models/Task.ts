@@ -6,6 +6,7 @@ export interface ITask extends Document {
   name: string;
   completed: boolean;
   completedAt?: Date;
+  userId: string;
 }
 
 const TaskSchema = new Schema<ITask>({
@@ -25,8 +26,13 @@ const TaskSchema = new Schema<ITask>({
   completedAt: {
     type: Date,
   },
+  userId: {
+    type: String,
+    required: true,
+    index: true,
+  },
 });
 
-const Task: Model<ITask> = models.Task || mongoose.model<ITask>('Task', TaskSchema);
+const Task: Model<ITask> = mongoose.models?.Task || mongoose.model<ITask>('Task', TaskSchema);
 
 export default Task;

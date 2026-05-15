@@ -1,31 +1,27 @@
-// app/api/tasks/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Task from '@/models/Task';
-import { Document } from 'mongoose';
-
-interface MongooseDoc extends Document {
-  _id: any;
-  __v?: number;
-}
+import { auth } from "@/auth";
 
 export async function POST(request: Request) {
-  await dbConnect();
-  try {
-    const body = await request.json();
-    const newTask = new Task(body);
-    await newTask.save();
-    
-    const savedTask = newTask.toObject() as MongooseDoc & { subtopicId: any };
-    const { _id, __v, subtopicId, ...rest } = savedTask;
-    return NextResponse.json({
-      ...rest,
-      id: _id.toString(),
-      subtopicId: subtopicId.toString()
-    }, { status: 201 });
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-    return NextResponse.json(savedTask, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
-  }
+        await dbConnect();
+        const body = await request.json();
+        const task = await Task.create({ ...body, userId: session.user.id });
+
+        const serializedTask = {
+            ...task.toObject(),
+            id: (task as any)._id.toString(),
+            _id: undefined
+        };
+
+        return NextResponse.json(serializedTask, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
+    }
 }

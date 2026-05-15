@@ -423,7 +423,7 @@ export function GoalProvider({ children }: { children: ReactNode }) {
         const response = await fetch('/api/logs/habit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subtopicId, date: dateString })
+          body: JSON.stringify({ subtopicId, date: dateString, value: 1 })
         });
         if (!response.ok) throw new Error('Failed to log habit');
 
@@ -516,13 +516,24 @@ export function GoalProvider({ children }: { children: ReactNode }) {
         progressPercent = daysInThisPeriod > 0 ? (daysCompletedThisMonth / daysInThisPeriod) * 100 : 0;
 
       } else if (subtopic.type === 'cumulative') {
-        const logsForSubtopic = dailyLogs.filter(log => log.subtopicId === subtopic.id);
+        const logsForSubtopic = dailyLogs.filter(log => {
+          if (log.subtopicId !== subtopic.id) return false;
+          const [y, m] = log.date.split('-').map(Number);
+          return y === currentYear && (m - 1) === currentMonth;
+        });
         metricValue = logsForSubtopic.reduce((sum, log) => sum + Number(log.value), 0);
         progressPercent = target > 0 ? (metricValue / target) * 100 : 0;
 
       } else if (subtopic.type === 'tasks') {
         const tasksForSubtopic = tasks.filter(task => task.subtopicId === subtopic.id);
-        completedTasks = tasksForSubtopic.filter(task => task.completed).length;
+
+        completedTasks = tasksForSubtopic.filter(task => {
+          if (!task.completed) return false;
+          if (!task.completedAt) return false;
+          const completedDate = new Date(task.completedAt);
+          return completedDate.getFullYear() === currentYear && completedDate.getMonth() === currentMonth;
+        }).length;
+
         totalTasks = tasksForSubtopic.length;
         progressPercent = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
       }

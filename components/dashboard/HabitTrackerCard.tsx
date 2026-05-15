@@ -37,8 +37,8 @@ export function HabitTrackerCard({ subtopic, onLogHabit }: HabitTrackerCardProps
   }, []); // Empty dependency array ensures this runs once on mount
 
   return (
-    <div className="p-4 md:p-6 rounded-lg transition-all duration-300 border border-slate-700/50 bg-black shadow-lg">
-      <h2 className="text-xl font-semibold mb-4 text-white text-center truncate">
+    <div className="p-4 md:p-6 rounded-lg transition-all duration-300 border border-slate-300/50 bg-black shadow-lg">
+      <h2 className="text-xl font-semibold mb-4 text-black text-center truncate">
         {subtopic.name}
       </h2>
 
@@ -50,14 +50,14 @@ export function HabitTrackerCard({ subtopic, onLogHabit }: HabitTrackerCardProps
 
           let circleClass = 'w-10 h-10 rounded-full flex items-center justify-center font-medium transition-all ';
           if (day.completed) {
-            circleClass += 'bg-green-500 text-white';
+            circleClass += 'bg-green-500 text-black';
           } else if (day.isToday) {
-            circleClass += 'bg-gray-900 text-indigo-400 border-2 border-indigo-400';
+            circleClass += 'bg-white text-black font-bold border-2 border-indigo-400';
           } else if (day.isFuture) {
             circleClass += 'bg-gray-950 text-gray-800';
           } else {
             // Past days
-            circleClass += 'bg-gray-900 text-slate-600';
+            circleClass += 'bg-white text-slate-600';
           }
 
           if (isClickable) {
@@ -92,7 +92,7 @@ export function HabitTrackerCard({ subtopic, onLogHabit }: HabitTrackerCardProps
             <span>Done Today!</span>
           </span>
         ) : (
-          <span className="text-slate-400 font-medium">
+          <span className="text-slate-700 font-medium">
             Tap today to log your habit.
           </span>
         )}
@@ -100,3 +100,5 @@ export function HabitTrackerCard({ subtopic, onLogHabit }: HabitTrackerCardProps
     </div>
   );
 }
+
+

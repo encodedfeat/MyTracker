@@ -21,7 +21,7 @@ interface TaskItemProps {
 
 export function TaskItem({ task, onToggleTask, onDeleteTask, isReadOnly = false }: TaskItemProps) {
   return (
-    <div className={`flex items-center justify-between p-2 bg-gray-800 rounded ${isReadOnly ? 'opacity-80' : ''}`}>
+    <div className={`flex items-center justify-between p-2 bg-gray-50 rounded ${isReadOnly ? 'opacity-80' : ''}`}>
       <div className="flex items-center space-x-2 flex-1">
         <button
           onClick={() => !isReadOnly && onToggleTask(task.id, task.completed)}
@@ -29,9 +29,9 @@ export function TaskItem({ task, onToggleTask, onDeleteTask, isReadOnly = false 
             } ${isReadOnly ? 'cursor-default' : 'cursor-pointer'}`}
           disabled={isReadOnly}
         >
-          {task.completed && <Check className="w-3 h-3 text-white" />}
+          {task.completed && <Check className="w-3 h-3 text-black" />}
         </button>
-        <span className={`text-sm ${task.completed ? 'line-through text-gray-500' : 'text-slate-200'}`}>
+        <span className={`text-sm ${task.completed ? 'line-through text-gray-500' : 'text-slate-900'}`}>
           {task.name}
         </span>
       </div>
@@ -46,3 +46,5 @@ export function TaskItem({ task, onToggleTask, onDeleteTask, isReadOnly = false 
     </div>
   );
 }
+
+

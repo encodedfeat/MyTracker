@@ -33,20 +33,21 @@ export function MonthlyProgressCard({
   return (
     <div className="h-full flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-        <h2 className="text-xl font-semibold text-white">This Month's Progress</h2>
+        <h2 className="text-xl font-semibold text-black">This Month's Progress</h2>
         <select
           value={selectedCategoryId}
           onChange={(e) => onCategoryChange?.(e.target.value)}
-          className="bg-slate-800 text-slate-300 text-sm rounded-lg border border-slate-700 focus:ring-indigo-500 focus:border-indigo-500 block p-2 outline-none min-w-[150px]"
+          className="bg-slate-50 text-slate-800 text-sm rounded-lg border border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 block p-2 outline-none min-w-[150px]"
         >
           <option value="">--select category--</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
             </option>
-          ))}
-        </select>
-      </div>
+          ))
+          }
+        </select >
+      </div >
       <div className="flex-1 relative" style={{ minHeight: '200px' }}>
         <ResponsiveContainer>
           <PieChart>
@@ -73,15 +74,17 @@ export function MonthlyProgressCard({
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center flex-col">
-          <span className="text-5xl font-bold text-indigo-400">
+          <span className="text-5xl font-bold text-black font-bold">
             {percentRounded}%
           </span>
-          <span className="text-lg font-medium text-slate-400">Completed</span>
+          <span className="text-lg font-medium text-slate-700">Completed</span>
         </div>
       </div>
-      <p className="text-center text-slate-400 mt-4">
+      <p className="text-center text-slate-700 mt-4">
         This is an average of all your subtopic trackers for the current month.
       </p>
-    </div>
+    </div >
   );
 }
+
+

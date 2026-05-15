@@ -17,10 +17,10 @@ declare global {
  * in development. This prevents connections from growing exponentially
  * during HMR.
  */
-let cached = global.mongoose;
+let cached = (globalThis as any).mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = (globalThis as any).mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {

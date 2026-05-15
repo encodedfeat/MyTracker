@@ -127,23 +127,23 @@ export function ModernDashboardView({
 
   const renderHeader = () => (
     <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-      <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 md:mb-0">
+      <h1 className="text-3xl md:text-4xl font-bold text-black mb-4 md:mb-0">
         {isPastMonth ? `Summary for ${monthYear}` : `Your Goals for ${monthYear}`}
       </h1>
-      <div className="flex items-center space-x-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+      <div className="flex items-center space-x-4 bg-slate-50/50 p-2 rounded-lg border border-slate-300">
         <button
           onClick={() => changeMonth(-1)}
-          className="p-2 hover:bg-slate-700 rounded-full transition-colors text-slate-300 hover:text-white"
+          className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-800 hover:text-black"
           aria-label="Previous month"
         >
           <ChevronLeft size={24} />
         </button>
-        <span className="text-lg font-medium text-white min-w-[140px] text-center">
+        <span className="text-lg font-medium text-black min-w-[140px] text-center">
           {monthYear}
         </span>
         <button
           onClick={() => changeMonth(1)}
-          className="p-2 hover:bg-slate-700 rounded-full transition-colors text-slate-300 hover:text-white"
+          className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-800 hover:text-black"
           aria-label="Next month"
         >
           <ChevronRight size={24} />
@@ -156,8 +156,8 @@ export function ModernDashboardView({
     return (
       <div className="space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6">
         {renderHeader()}
-        <div className="text-center p-20 rounded-lg border border-slate-800 bg-slate-900/50">
-          <h2 className="text-2xl font-semibold text-slate-300">Wait for {monthYear}</h2>
+        <div className="text-center p-20 rounded-lg border border-black bg-white/50">
+          <h2 className="text-2xl font-semibold text-slate-800">Wait for {monthYear}</h2>
           <p className="text-slate-500 mt-2">You can't track goals for the future yet.</p>
         </div>
       </div>
@@ -168,8 +168,8 @@ export function ModernDashboardView({
     return (
       <div className="space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6">
         {renderHeader()}
-        <div className="text-center p-20 rounded-lg border border-slate-800 bg-slate-900/50">
-          <h2 className="text-2xl font-semibold text-slate-300">No record found</h2>
+        <div className="text-center p-20 rounded-lg border border-black bg-white/50">
+          <h2 className="text-2xl font-semibold text-slate-800">No record found</h2>
           <p className="text-slate-500 mt-2">No activity was recorded for this month.</p>
         </div>
       </div>
@@ -180,69 +180,110 @@ export function ModernDashboardView({
     return (
       <div className="space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6">
         {renderHeader()}
-        <div className="text-center p-10 rounded-lg animate-fadeIn">
-          <h2 className="text-2xl font-semibold mb-4 text-white">No categories yet!</h2>
-          <p className="text-slate-400 mb-6">Get started by adding your first category and subtopic.</p>
-          <button
-            onClick={() => router.push('/manage')}
-            className="bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-indigo-700 transition-all"
-          >
-            Manage Trackers
-          </button>
+        <div
+          className="relative overflow-hidden rounded-3xl border border-slate-300/50 shadow-2xl p-10 text-center animate-fadeIn"
+          style={{
+            backgroundColor: '#ffffff',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          {/* Overlay */}
+          <div className="absolute inset-0  pointer-events-none" />
+
+          <div className="relative z-10">
+            <h2 className="text-2xl font-semibold mb-4 text-black">No categories yet!</h2>
+            <p className="text-slate-900 mb-6 font-medium">Get started by adding your first category and subtopic.</p>
+            <button
+              onClick={() => router.push('/manage')}
+              className="button-89 text-lg"
+              style={{ '--color': '#000000', color: 'black', backgroundColor: 'white' } as React.CSSProperties}
+            >
+              Manage Trackers
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6 pb-12">
-      {renderHeader()}
+    <div
+      className="min-h-screen w-full relative"
+      style={{
+        backgroundColor: '#ffffff',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Overlay to ensure text readability */}
+      <div className="absolute inset-0  pointer-events-none" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6 mb-4 xl:mb-6">
-        <div className="h-full">
-          <div className="h-full bg-black rounded-lg border border-slate-700/50 p-4">
-            <MonthlyProgressCard
-              percent={displayedPercent}
-              categories={validCategories}
-              selectedCategoryId={selectedCategoryId}
-              onCategoryChange={setSelectedCategoryId}
+      <div className="relative z-10 space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6 pb-12 pt-6">
+        {renderHeader()}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6 mb-4 xl:mb-6">
+          <div className="h-full">
+            <div
+              className="h-full rounded-lg border border-slate-300/50 p-4 overflow-hidden relative"
+              style={{
+                backgroundColor: '#ffffff',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            >
+              <div className="absolute inset-0  pointer-events-none" />
+              <div className="relative z-10 h-full">
+                <MonthlyProgressCard
+                  percent={displayedPercent}
+                  categories={validCategories}
+                  selectedCategoryId={selectedCategoryId}
+                  onCategoryChange={setSelectedCategoryId}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="h-full">
+            <DailyProgressLineChart
+              data={dailyLineChartData}
+              subtopicMeta={subtopicMeta}
+              selectedSubtopicId={selectedSubtopicId}
+              onSubtopicChange={setSelectedSubtopicId}
+              goals={goals}
+              subtopics={subtopicProgress}
             />
           </div>
         </div>
-        <div className="h-full">
-          <DailyProgressLineChart
-            data={dailyLineChartData}
-            subtopicMeta={subtopicMeta}
-            selectedSubtopicId={selectedSubtopicId}
-            onSubtopicChange={setSelectedSubtopicId}
-            goals={goals}
-            subtopics={subtopicProgress}
-          />
+
+        <HabitMonthlyReportView
+          subtopics={subtopicProgress}
+          goals={goals}
+          onLogHabit={onLogHabit}
+          isCompact={true}
+          isReadOnly={true}
+        />
+
+        {/* All non-habit progress cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {subtopicProgress
+            .filter(st => st.type !== 'habit')
+            .map(subtopic => (
+              <SubtopicProgressCircle
+                key={subtopic.id}
+                subtopic={subtopic}
+                categoryName={goals.find(g => g.id === subtopic.goalId)?.name || 'Unknown'}
+              />
+            ))}
         </div>
       </div>
-
-      <HabitMonthlyReportView
-        subtopics={subtopicProgress}
-        goals={goals}
-        onLogHabit={onLogHabit}
-        isCompact={true}
-        isReadOnly={true}
-      />
-
-      {/* All non-habit progress cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {subtopicProgress
-          .filter(st => st.type !== 'habit')
-          .map(subtopic => (
-            <SubtopicProgressCircle
-              key={subtopic.id}
-              subtopic={subtopic}
-              categoryName={goals.find(g => g.id === subtopic.goalId)?.name || 'Unknown'}
-            />
-          ))}
-      </div>
-
-
     </div>
   );
 }
+
+
+
+

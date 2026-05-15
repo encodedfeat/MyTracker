@@ -46,8 +46,8 @@ export function TaskSubtopicEditor({
   };
 
   return (
-    <div className="p-4 border border-gray-700/50 rounded-lg bg-gray-900">
-      <h3 className="text-xl font-semibold text-white mb-3">{subtopic.name}</h3>
+    <div className="p-4 border border-gray-300/50 rounded-lg bg-white">
+      <h3 className="text-xl font-semibold text-black mb-3">{subtopic.name}</h3>
       <div className="space-y-2">
         {tasks.map(task => (
           <TaskItem
@@ -70,11 +70,12 @@ export function TaskSubtopicEditor({
               value={taskInput}
               onChange={(e) => setTaskInput(e.target.value)}
               placeholder="Add new content/task"
-              className="flex-grow px-3 py-1.5 bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="flex-grow px-3 py-1.5 bg-gray-50 border border-gray-300 text-black rounded-lg shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
             <button
               type="submit"
-              className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700"
+              className="button-89 text-sm"
+              style={{ '--color': '#000000', color: 'black', backgroundColor: 'white' } as React.CSSProperties}
             >
               Add
             </button>
@@ -83,16 +84,17 @@ export function TaskSubtopicEditor({
       </div>
 
       {deletingTaskId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 text-white">
+        <div className="fixed inset-0  flex items-center justify-center z-50">
+          <div className="bg-gray-50 p-6 rounded-lg max-w-md w-full mx-4 text-black border-4 border-black shadow-[8px_8px_0_0_#000]">
             <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
-            <p className="text-gray-300 mb-4">
+            <p className="text-gray-800 mb-4">
               Are you sure you want to delete this task? <strong>You can't undo that.</strong>
             </p>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setDeletingTaskId(null)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+                className="button-89 text-sm bg-gray-200"
+                style={{ '--color': '#000000', color: 'black' } as React.CSSProperties}
               >
                 Cancel
               </button>
@@ -105,7 +107,8 @@ export function TaskSubtopicEditor({
                     alert('Failed to delete task. Please try again.');
                   }
                 }}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
+                className="button-89 text-sm bg-red-600 text-white"
+                style={{ '--color': '#000000' } as React.CSSProperties}
               >
                 Delete
               </button>
@@ -116,3 +119,5 @@ export function TaskSubtopicEditor({
     </div>
   );
 }
+
+

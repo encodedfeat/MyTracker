@@ -1,148 +1,86 @@
-// app/api/goals/[id]/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Goal from '@/models/Goal';
 import Subtopic from '@/models/Subtopic';
 import Task from '@/models/Task';
 import Log from '@/models/Log';
-
 import { isValidObjectId } from 'mongoose';
 
 export async function PUT(
-  request: Request,
-  props: { params: Promise<{ id: string }> }
+    request: Request,
+    props: { params: Promise<{ id: string }> }
 ) {
-  try {
-    await dbConnect();
     const params = await props.params;
-    const goalId = params.id;
+    try {
+        await dbConnect();
+        const goalId = params.id;
 
-    if (!isValidObjectId(goalId)) {
-      return NextResponse.json(
-        { error: 'Invalid goal ID format' },
-        { status: 400 }
-      );
+        if (!isValidObjectId(goalId)) {
+            return NextResponse.json({ error: 'Invalid goal ID' }, { status: 400 });
+        }
+
+        const updates = await request.json();
+        const goal = await Goal.findByIdAndUpdate(goalId, updates, { new: true });
+
+        if (!goal) {
+            return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(goal);
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to update goal' }, { status: 500 });
     }
-
-    const goal = await Goal.findById(goalId);
-    if (!goal) {
-      return NextResponse.json(
-        { error: 'Goal not found' },
-        { status: 404 }
-      );
-    }
-
-    const updates = await request.json();
-    const updatedGoal = await Goal.findByIdAndUpdate(
-      goalId,
-      { $set: updates },
-      { new: true, runValidators: true }
-    );
-
-    return NextResponse.json(updatedGoal);
-  } catch (error) {
-    console.error('Error updating goal:', error);
-    return NextResponse.json(
-      { error: 'Failed to update goal' },
-      { status: 500 }
-    );
-  }
 }
 
 export async function DELETE(
-  request: Request,
-  props: { params: Promise<{ id: string }> }
+    request: Request,
+    props: { params: Promise<{ id: string }> }
 ) {
-  const params = await props.params;
-  console.log('DELETE request for goal:', params.id);
-
-  try {
-    console.log('Connecting to database...');
-    await dbConnect();
-    console.log('Database connected');
-
-    const goalId = params.id;
-
-    // Validate MongoDB ObjectId format
-    console.log('Validating ObjectId:', goalId);
-    if (!isValidObjectId(goalId)) {
-      console.log('Invalid ObjectId format');
-      return NextResponse.json(
-        { error: 'Invalid goal ID format' },
-        { status: 400 }
-      );
-    }
-
-    // First check if the goal exists
-    console.log('Checking if goal exists...');
-    const goal = await Goal.findById(goalId);
-    console.log('Goal lookup result:', goal);
-
-    if (!goal) {
-      console.log('Goal not found in database');
-      return NextResponse.json(
-        { error: 'Goal not found' },
-        { status: 404 }
-      );
-    }
-    console.log('Goal found, proceeding with deletion');
-
-    // Start a session for transaction
-    const session = await dbConnect().then(db => db.startSession());
-
+    const params = await props.params;
     try {
-      await session.withTransaction(async () => {
-        // 1. Find all subtopics for this goal
-        const subtopics = await Subtopic.find({ goalId: goalId }).session(session);
-        const subtopicIds = subtopics.map(st => st._id);
-        const subtopicsCount = subtopics.length;
+        await dbConnect();
+        const goalId = params.id;
 
-        // 2. Delete all tasks and logs for those subtopics
-        let tasksCount = 0;
-        let logsCount = 0;
-        if (subtopicIds.length > 0) {
-          const [tasksResult, logsResult] = await Promise.all([
-            Task.deleteMany({ subtopicId: { $in: subtopicIds } }).session(session),
-            Log.deleteMany({ subtopicId: { $in: subtopicIds } }).session(session)
-          ]);
-          tasksCount = tasksResult.deletedCount;
-          logsCount = logsResult.deletedCount;
+        if (!isValidObjectId(goalId)) {
+            return NextResponse.json({ error: 'Invalid goal ID' }, { status: 400 });
         }
 
-        // 3. Delete all subtopics
-        await Subtopic.deleteMany({ goalId: goalId }).session(session);
-
-        // 4. Delete the goal
-        const deletedGoal = await Goal.findByIdAndDelete(goalId).session(session);
-
-        if (!deletedGoal) {
-          throw new Error('Goal not found');
+        const goal = await Goal.findById(goalId);
+        if (!goal) {
+            return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
         }
 
-        return { subtopicsCount, tasksCount, logsCount };
-      });
+        // Start a transaction to delete everything related to this goal
+        const session = await dbConnect().then(db => db.startSession());
+        session.startTransaction();
 
-      const result = await session.endSession();
+        try {
+            // Find subtopics to get their IDs
+            const subtopics = await Subtopic.find({ goalId }).session(session);
+            const subtopicIds = subtopics.map(s => s._id);
 
-      return NextResponse.json({
-        success: true,
-        deletedItems: result
-      }, { status: 200 });
+            // Delete logs and tasks for these subtopics
+            if (subtopicIds.length > 0) {
+                await Log.deleteMany({ subtopicId: { $in: subtopicIds } }).session(session);
+                await Task.deleteMany({ subtopicId: { $in: subtopicIds } }).session(session);
+            }
 
+            // Delete subtopics
+            await Subtopic.deleteMany({ goalId }).session(session);
+
+            // Delete goal
+            await Goal.findByIdAndDelete(goalId).session(session);
+
+            await session.commitTransaction();
+            return NextResponse.json({ message: 'Goal deleted successfully' });
+        } catch (error) {
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            session.endSession();
+        }
     } catch (error) {
-      await session.abortTransaction();
-      console.error('Error in deletion transaction:', error);
-      return NextResponse.json({
-        error: 'Failed to delete goal and its related items',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }, { status: 500 });
+        console.error('Error deleting goal:', error);
+        return NextResponse.json({ error: 'Failed to delete goal' }, { status: 500 });
     }
-
-  } catch (error) {
-    console.error('Error in delete operation:', error);
-    return NextResponse.json({
-      error: 'Failed to delete goal',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
-  }
 }

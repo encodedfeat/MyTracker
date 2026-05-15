@@ -150,131 +150,128 @@ export function DailyProgressLineChart({
     : "Today's Total";
 
   return (
-    <div className="h-full flex flex-col bg-black rounded-lg border border-slate-700/50 p-4">
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+    <div
+      className="h-full flex flex-col rounded-lg border border-slate-300/50 p-4 overflow-hidden relative"
+      style={{
+        backgroundColor: '#ffffff',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      <div className="absolute inset-0  pointer-events-none" />
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex flex-wrap items-center gap-3 mb-6">
 
-        {/* Category Dropdown */}
-        <div className="relative">
-          <select
-            value={selectedCategoryId}
-            onChange={(e) => {
-              setSelectedCategoryId(e.target.value);
-              // Reset subtopic selection if it doesn't belong to the new category
-              if (selectedSubtopicId) {
-                const st = subtopics.find(s => s.id === selectedSubtopicId);
-                if (st && st.goalId !== e.target.value && e.target.value !== '') {
-                  onSubtopicChange('');
+          {/* Category Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedCategoryId}
+              onChange={(e) => {
+                setSelectedCategoryId(e.target.value);
+                // Reset subtopic selection if it doesn't belong to the new category
+                if (selectedSubtopicId) {
+                  const st = subtopics.find(s => s.id === selectedSubtopicId);
+                  if (st && st.goalId !== e.target.value && e.target.value !== '') {
+                    onSubtopicChange('');
+                  }
                 }
-              }
-            }}
-            className="appearance-none flex items-center gap-2 px-4 py-2 rounded-full bg-transparent border border-[#3B82F6] text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors cursor-pointer text-sm font-medium pr-10 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
-            style={{ minWidth: '160px' }}
-          >
-            <option value="" className="bg-[#15202B] text-white">All Categories</option>
-            {relevantCategories.map(goal => (
-              <option key={goal.id} value={goal.id} className="bg-[#15202B] text-white">
-                {goal.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#3B82F6]" />
-        </div>
+              }}
+              className="appearance-none flex items-center gap-2 px-4 py-2 rounded-full bg-transparent border border-[#3B82F6] text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors cursor-pointer text-sm font-medium pr-10 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+              style={{ minWidth: '160px' }}
+            >
+              <option value="" className="bg-[#15202B] text-black">All Categories</option>
+              {relevantCategories.map(goal => (
+                <option key={goal.id} value={goal.id} className="bg-[#15202B] text-black">
+                  {goal.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#3B82F6]" />
+          </div>
 
-        {/* Custom Subtopic Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setIsSubtopicDropdownOpen(!isSubtopicDropdownOpen)}
-            className="flex items-center justify-between gap-2 px-4 py-2 rounded-full bg-transparent border border-[#10B981] text-[#10B981] hover:bg-[#10B981]/10 transition-colors cursor-pointer text-sm font-medium min-w-[200px]"
-          >
-            <span className="truncate max-w-[180px]">
-              {selectedSubtopic ? selectedSubtopic.name : "Select subtopic..."}
-            </span>
-            <ChevronDown className="w-4 h-4 text-[#10B981]" />
-          </button>
+          {/* Custom Subtopic Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsSubtopicDropdownOpen(!isSubtopicDropdownOpen)}
+              className="flex items-center justify-between gap-2 px-4 py-2 rounded-full bg-transparent border border-[#10B981] text-[#10B981] hover:bg-[#10B981]/10 transition-colors cursor-pointer text-sm font-medium min-w-[200px]"
+            >
+              <span className="truncate max-w-[180px]">
+                {selectedSubtopic ? selectedSubtopic.name : "Select subtopic..."}
+              </span>
+              <ChevronDown className="w-4 h-4 text-[#10B981]" />
+            </button>
 
-          {isSubtopicDropdownOpen && (
-            <div className="absolute top-full left-0 mt-2 w-[280px] max-h-[300px] overflow-y-auto bg-[#15202B] border border-slate-700 rounded-lg shadow-xl z-50 custom-scrollbar">
-              <div
-                onClick={() => {
-                  onSubtopicChange('');
-                  setIsSubtopicDropdownOpen(false);
-                }}
-                className={`px-4 py-3 cursor-pointer hover:bg-slate-800 transition-colors ${!selectedSubtopicId ? 'bg-slate-800' : ''}`}
-              >
-                <span className="text-white text-sm">None</span>
-              </div>
-
-              {filteredSubtopics?.map(st => (
+            {isSubtopicDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-[280px] max-h-[300px] overflow-y-auto bg-[#15202B] border border-slate-300 rounded-lg shadow-xl z-50 custom-scrollbar">
                 <div
-                  key={st.id}
                   onClick={() => {
-                    onSubtopicChange(st.id);
+                    onSubtopicChange('');
                     setIsSubtopicDropdownOpen(false);
                   }}
-                  className={`px-4 py-3 cursor-pointer hover:bg-slate-800 transition-colors border-t border-slate-800 ${selectedSubtopicId === st.id ? 'bg-slate-800' : ''}`}
+                  className={`px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors ${!selectedSubtopicId ? 'bg-slate-50' : ''}`}
                 >
-                  <div className="flex flex-col">
-                    <span className="text-white text-sm font-medium">{st.name}</span>
-                    <span className="text-xs text-slate-500 font-normal">
-                      {getCategoryName(st.id)}
-                    </span>
+                  <span className="text-black text-sm">None</span>
+                </div>
+
+                {filteredSubtopics?.map(st => (
+                  <div
+                    key={st.id}
+                    onClick={() => {
+                      onSubtopicChange(st.id);
+                      setIsSubtopicDropdownOpen(false);
+                    }}
+                    className={`px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors border-t border-black ${selectedSubtopicId === st.id ? 'bg-slate-50' : ''}`}
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-black text-sm font-medium">{st.name}</span>
+                      <span className="text-xs text-slate-500 font-normal">
+                        {getCategoryName(st.id)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {filteredSubtopics?.length === 0 && (
-                <div className="px-4 py-3 text-slate-500 text-sm italic text-center">
-                  No subtopics found
-                </div>
-              )}
-            </div>
-          )}
+                {filteredSubtopics?.length === 0 && (
+                  <div className="px-4 py-3 text-slate-500 text-sm italic text-center">
+                    No subtopics found
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 relative" style={{ minHeight: '300px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={transformedData}
-            margin={{ top: 10, right: 40, left: 0, bottom: 5 }}
-          >
-            <defs>
-              <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="colorSubtopic" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2F3336" vertical={false} />
-            <XAxis
-              dataKey="name"
-              stroke="#6B7280"
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              interval={0} // Force show all ticks
-              tickFormatter={(value) => value.replace('Day ', '')}
-            />
+        <div className="flex-1 relative" style={{ minHeight: '300px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={transformedData}
+              margin={{ top: 10, right: 40, left: 0, bottom: 5 }}
+            >
+              <defs>
+                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorSubtopic" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2F3336" vertical={false} />
+              <XAxis
+                dataKey="name"
+                stroke="#6B7280"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                interval={0} // Force show all ticks
+                tickFormatter={(value) => value.replace('Day ', '')}
+              />
 
-            <YAxis
-              yAxisId="left"
-              stroke="#3B82F6"
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value) => value + '%'}
-              domain={[0, 100]}
-              width={40}
-            />
-
-            {selectedSubtopic && (
               <YAxis
-                yAxisId="right"
-                orientation="right"
-                stroke="#10B981"
+                yAxisId="left"
+                stroke="#3B82F6"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -282,55 +279,74 @@ export function DailyProgressLineChart({
                 domain={[0, 100]}
                 width={40}
               />
-            )}
 
-            <Tooltip
-              cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '3 3' }}
-              contentStyle={{
-                backgroundColor: '#000000',
-                border: '1px solid #2F3336',
-                borderRadius: '12px',
-                padding: '12px'
-              }}
-              labelStyle={{ color: '#9CA3AF', marginBottom: '8px', fontSize: '13px' }}
-              itemStyle={{ color: '#E5E7EB', fontSize: '14px', fontWeight: '500' }}
-              formatter={(value: any, name: string) => {
-                if (name === totalLineName) {
-                  return [value.toLocaleString(), name];
-                }
-                return [value + '%', name];
-              }}
-              labelFormatter={(label) => 'Day ' + label.replace('Day ', '')}
-            />
+              {selectedSubtopic && (
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#10B981"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => value + '%'}
+                  domain={[0, 100]}
+                  width={40}
+                />
+              )}
 
-            <Area
-              yAxisId="left"
-              type="monotone"
-              dataKey="percent"
-              name={totalLineName}
-              stroke="#3B82F6"
-              fillOpacity={1}
-              fill="url(#colorTotal)"
-              strokeWidth={2.5}
-              activeDot={{ r: 5, fill: '#3B82F6', stroke: '#15202B', strokeWidth: 2 }}
-            />
-
-            {selectedSubtopic && (
-              <Area
-                yAxisId="right"
-                type="monotone"
-                name={selectedSubtopic.name}
-                dataKey={'subtopic_' + selectedSubtopic.id}
-                stroke="#10B981"
-                fillOpacity={1}
-                fill="url(#colorSubtopic)"
-                strokeWidth={2.5}
-                activeDot={{ r: 5, fill: '#10B981', stroke: '#15202B', strokeWidth: 2 }}
+              <Tooltip
+                cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '3 3' }}
+                contentStyle={{
+                  backgroundColor: '#000000',
+                  border: '1px solid #2F3336',
+                  borderRadius: '12px',
+                  padding: '12px'
+                }}
+                labelStyle={{ color: '#9CA3AF', marginBottom: '8px', fontSize: '13px' }}
+                itemStyle={{ color: '#E5E7EB', fontSize: '14px', fontWeight: '500' }}
+                formatter={(value: any, name: string) => {
+                  if (name === totalLineName) {
+                    return [value.toLocaleString(), name];
+                  }
+                  return [value + '%', name];
+                }}
+                labelFormatter={(label) => 'Day ' + label.replace('Day ', '')}
               />
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
+
+              <Area
+                yAxisId="left"
+                type="monotone"
+                dataKey="percent"
+                name={totalLineName}
+                stroke="#3B82F6"
+                fillOpacity={1}
+                fill="url(#colorTotal)"
+                strokeWidth={2.5}
+                activeDot={{ r: 5, fill: '#3B82F6', stroke: '#15202B', strokeWidth: 2 }}
+              />
+
+              {selectedSubtopic && (
+                <Area
+                  yAxisId="right"
+                  type="monotone"
+                  name={selectedSubtopic.name}
+                  dataKey={'subtopic_' + selectedSubtopic.id}
+                  stroke="#10B981"
+                  fillOpacity={1}
+                  fill="url(#colorSubtopic)"
+                  strokeWidth={2.5}
+                  activeDot={{ r: 5, fill: '#10B981', stroke: '#15202B', strokeWidth: 2 }}
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
+
   );
 }
+
+
+
+

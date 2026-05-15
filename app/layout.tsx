@@ -1,9 +1,9 @@
-// app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { GoalProvider } from '@/context/GoalContext';
-import { AppHeader } from '@/components/layout/AppHeader';
+import { Providers } from '@/components/Providers';
+
+
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -11,8 +11,6 @@ export const metadata: Metadata = {
   title: 'My Goal Tracker',
   description: 'Your personal goal tracker',
 };
-
-
 
 export default function RootLayout({
   children,
@@ -22,7 +20,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <GoalProvider>
+        <Providers>
+
           {/* --- CSS Animations Style Tag --- */}
           <style dangerouslySetInnerHTML={{
             __html: `
@@ -56,18 +55,10 @@ export default function RootLayout({
         `}} />
 
           <div className="min-h-screen bg-black font-sans text-slate-200">
-            <AppHeader />
-
-            <main className="p-4 md:p-8 max-w-7xl mx-auto">
-              {children} {/* This is where your page content goes */}
-            </main>
-
-            <footer className="text-center p-4 text-slate-500 text-sm">
-              Your Personal Goal Tracker
-            </footer>
+            {children}
           </div>
-        </GoalProvider>
-      </body >
-    </html >
+        </Providers>
+      </body>
+    </html>
   );
 }

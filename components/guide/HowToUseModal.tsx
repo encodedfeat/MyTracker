@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft, LayoutDashboard, Settings, ListTodo, PenTool } from 'lucide-react';
-import Image from 'next/image';
 
 interface HowToUseModalProps {
     isOpen: boolean;
@@ -15,35 +14,30 @@ const steps = [
         title: 'Welcome to MyTracker',
         description: 'Your personal companion for tracking goals, habits, and tasks. Let\'s take a quick tour to help you get started.',
         icon: LayoutDashboard,
-        image: '/assets/guide/dashboard.png', // Placeholder, will use the dashboard image
     },
     {
         id: 'dashboard',
         title: 'Track Your Progress',
         description: 'The Dashboard gives you a bird\'s-eye view of your performance. Monitor your daily logs, visualize trends with charts, and stay motivated.',
         icon: LayoutDashboard,
-        image: '/assets/guide/dashboard.png',
     },
     {
         id: 'manage-categories',
         title: 'Organize with Categories',
         description: 'Start by creating Categories (Goals) in the "Manage" tab. These are the high-level areas you want to focus on, like "Health", "Career", or "Learning".',
         icon: Settings,
-        image: '/assets/guide/categories.png',
     },
     {
         id: 'manage-subtopics',
         title: 'Define Subtopics',
         description: 'Break down your categories into actionable Subtopics. Create "Habits" for daily routines, "Cumulative" goals for measurable targets, or "Task Lists" for specific projects.',
         icon: ListTodo,
-        image: '/assets/guide/subtopics.png',
     },
     {
         id: 'logging',
         title: 'Log Your Journey',
         description: 'Use the "Log Your Cumulative" tab or the daily habit checklist to record your progress. Consistency is key!',
         icon: PenTool,
-        image: '/assets/guide/logging.png',
     },
 ];
 
@@ -84,62 +78,54 @@ export function HowToUseModal({ isOpen, onClose }: HowToUseModalProps) {
         <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-white/80 backdrop-blur-sm"
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className={`relative w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
+            <div className={`relative w-full max-w-4xl bg-white border-4 border-black shadow-[12px_12px_0_0_#000] rounded-none overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-800 bg-slate-900/50">
-                    <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-indigo-500/10 rounded-lg">
-                            <Icon className="w-6 h-6 text-indigo-400" />
+                <div className="flex items-center justify-between p-6 border-b-4 border-black bg-white">
+                    <div className="flex items-center space-x-4">
+                        <div className="p-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000]">
+                            <Icon className="w-6 h-6 text-black font-bold" />
                         </div>
-                        <h2 className="text-xl font-bold text-white">{step.title}</h2>
+                        <h2 className="text-2xl font-black text-black uppercase tracking-wider">{step.title}</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors"
+                        className="p-2 text-black hover:bg-slate-200 border-2 border-transparent hover:border-black transition-all"
                     >
-                        <X size={20} />
+                        <X size={24} strokeWidth={3} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="flex flex-col md:flex-row h-[500px]">
-                    {/* Image Section */}
-                    <div className="w-full md:w-2/3 bg-black/50 relative overflow-hidden group">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="relative w-full h-full">
-                                <Image
-                                    src={step.image}
-                                    alt={step.title}
-                                    fill
-                                    className="object-contain p-8 transition-transform duration-500 group-hover:scale-105"
-                                />
-                            </div>
+                <div className="flex flex-col md:flex-row h-[450px]">
+                    {/* Icon Showcase Section */}
+                    <div className="w-full md:w-1/2 p-8 md:p-12 bg-slate-50 flex items-center justify-center border-b-4 md:border-b-0 md:border-r-4 border-black group">
+                        <div className="p-16 bg-white border-4 border-black shadow-[8px_8px_0_0_#000] transform transition-transform duration-500 group-hover:scale-105">
+                            <Icon className="w-32 h-32 text-black" strokeWidth={1.5} />
                         </div>
-                        {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent md:bg-gradient-to-r" />
                     </div>
 
                     {/* Content Section */}
-                    <div className="w-full md:w-1/3 p-8 flex flex-col justify-between bg-slate-900">
-                        <div className="space-y-6">
-                            <div className="flex space-x-1">
+                    <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-between bg-white">
+                        <div className="space-y-8">
+                            {/* Progress Bar */}
+                            <div className="flex space-x-2">
                                 {steps.map((_, idx) => (
                                     <div
                                         key={idx}
-                                        className={`h-1 flex-1 rounded-full transition-all duration-300 ${idx === currentStep ? 'bg-indigo-500' : 'bg-slate-700'
+                                        className={`h-2 flex-1 border border-black transition-all duration-300 ${idx === currentStep ? 'bg-black' : 'bg-slate-100'
                                             }`}
                                     />
                                 ))}
                             </div>
 
                             <div className="animate-fade-in">
-                                <p className="text-lg text-slate-300 leading-relaxed">
+                                <p className="text-xl text-black font-medium leading-relaxed font-mono">
                                     {step.description}
                                 </p>
                             </div>
@@ -149,21 +135,22 @@ export function HowToUseModal({ isOpen, onClose }: HowToUseModalProps) {
                             <button
                                 onClick={handlePrev}
                                 disabled={currentStep === 0}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${currentStep === 0
-                                        ? 'text-slate-600 cursor-not-allowed'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                className={`flex items-center space-x-2 px-4 py-2 font-bold text-sm uppercase transition-colors ${currentStep === 0
+                                        ? 'text-slate-400 cursor-not-allowed'
+                                        : 'text-black hover:bg-slate-100 border-2 border-transparent hover:border-black'
                                     }`}
                             >
-                                <ChevronLeft size={16} />
+                                <ChevronLeft size={20} strokeWidth={3} />
                                 <span>Back</span>
                             </button>
 
                             <button
                                 onClick={handleNext}
-                                className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-105 active:scale-95"
+                                className="button-89 flex items-center space-x-2 text-lg uppercase font-black"
+                                style={{ '--color': '#000000', color: 'black', backgroundColor: 'white' } as React.CSSProperties}
                             >
                                 <span>{currentStep === steps.length - 1 ? 'Get Started' : 'Next'}</span>
-                                {currentStep < steps.length - 1 && <ChevronRight size={16} />}
+                                {currentStep < steps.length - 1 && <ChevronRight size={20} strokeWidth={3} />}
                             </button>
                         </div>
                     </div>
@@ -172,3 +159,6 @@ export function HowToUseModal({ isOpen, onClose }: HowToUseModalProps) {
         </div>
     );
 }
+
+
+

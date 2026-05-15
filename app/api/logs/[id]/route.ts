@@ -1,22 +1,27 @@
-// app/api/logs/[id]/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Log from '@/models/Log';
+import { isValidObjectId } from 'mongoose';
 
 export async function DELETE(
     request: Request,
     props: { params: Promise<{ id: string }> }
 ) {
-    await dbConnect();
     const params = await props.params;
     try {
-        const deletedLog = await Log.findByIdAndDelete(params.id);
+        await dbConnect();
+        const { id } = params;
 
-        if (!deletedLog) {
+        if (!isValidObjectId(id)) {
+            return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+        }
+
+        const log = await Log.findByIdAndDelete(id);
+        if (!log) {
             return NextResponse.json({ error: 'Log not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true }, { status: 200 });
+        return NextResponse.json({ message: 'Log deleted' });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to delete log' }, { status: 500 });
     }
