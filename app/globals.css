@@ -24,3 +24,577 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e293b;
+  /* slate-800 */
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+  /* slate-600 */
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+  /* slate-500 */
+}
+
+/* Hide Scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+/* Button 89 Style */
+.button-89 {
+  --b: 3px;
+  /* border thickness */
+  --s: .45em;
+  /* size of the corner */
+  --color: #ffffff;
+  /* Changed to white for dark theme visibility */
+
+  padding: calc(.5em + var(--s)) calc(.9em + var(--s));
+  color: var(--color);
+  --_p: var(--s);
+  background:
+    conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color) 0) var(--_p) var(--_p)/calc(100% - var(--b) - 2*var(--_p)) calc(100% - var(--b) - 2*var(--_p));
+  transition: .3s linear, color 0s, background-color 0s;
+  outline: var(--b) solid #0000;
+  outline-offset: .6em;
+  font-size: 16px;
+  font-weight: bold;
+
+  border: 0;
+
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.button-89:hover,
+.button-89:focus-visible {
+  --_p: 0px;
+  outline-color: var(--color);
+  outline-offset: .05em;
+}
+
+.button-89:active {
+  background: var(--color);
+  color: #000;
+  /* Black text on active for contrast */
+}
+
+/* Button 55 Style */
+.button-55 {
+  align-self: center;
+  background-color: #e8d7c1;
+  /* Manageable brown */
+  background-image: none;
+  background-position: 0 90%;
+  background-repeat: repeat no-repeat;
+  background-size: 4px 3px;
+  border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+  border-style: solid;
+  border-width: 2px;
+  box-shadow: rgba(0, 0, 0, .2) 15px 28px 25px -18px;
+  box-sizing: border-box;
+  color: #41403e;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Neucha, sans-serif;
+  font-size: 1rem;
+  line-height: 23px;
+  outline: none;
+  padding: .75rem;
+  text-decoration: none;
+  transition: box-shadow 235ms ease-in-out, transform 235ms ease-in-out;
+  border-bottom-left-radius: 15px 255px;
+  border-bottom-right-radius: 225px 15px;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-55:hover {
+  box-shadow: rgba(0, 0, 0, .3) 2px 8px 8px -5px;
+  transform: translate3d(0, 2px, 0);
+}
+
+.button-55:focus {
+  box-shadow: rgba(0, 0, 0, .3) 2px 8px 4px -6px;
+}
+
+/* Active state for Button 55 (when selected) */
+.button-55.active {
+  background-color: #e0e7ff;
+  /* Light indigo background */
+  border-color: #4f46e5;
+  /* Indigo border */
+  color: #312e81;
+  /* Dark indigo text */
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+  transform: translate3d(0, 2px, 0);
+}
+
+/* Select 55 Style (Dropdown) */
+.select-55 {
+  width: 100%;
+  height: 60px;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  color: #000;
+  background-color: #e8d7c1;
+  border: 4px solid #000;
+  border-radius: 0;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 8px 8px 0 #000;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 45px;
+}
+
+.select-55:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 12px 12px 0 #000;
+}
+
+.select-55:focus {
+  background-color: #010101;
+  color: #fff;
+  border-color: #d6d9dd;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+.select-55 option {
+  background-color: #fff;
+  color: #000;
+  font-size: 16px;
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  padding: 12px 16px;
+}
+
+.select-55 option:hover,
+.select-55 option:focus,
+.select-55 option:checked {
+  background-color: #000;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Uiverse Radio Style */
+/* Uiverse Radio Style - Brutalist Theme */
+.radio-wrapper {
+  position: relative;
+  width: fit-content;
+  height: 50px;
+  background-color: #fff;
+  border: 4px solid #000;
+  border-radius: 0;
+  display: flex;
+  flex-direction: row;
+  box-shadow: 6px 6px 0 #000;
+  padding: 0;
+  gap: 0;
+}
+
+.radio-option {
+  min-width: 100px;
+  height: 100%;
+  position: relative;
+  transition: 0.2s ease;
+  flex: 1;
+  border-right: 3px solid #000;
+}
+
+.radio-option:last-child {
+  border-right: none;
+}
+
+.radio-option:hover {
+  background-color: #e8e8e8;
+}
+
+.radio-input {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  appearance: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.radio-btn {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.radio-span {
+  color: #000;
+  font-family: "Courier New", monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.radio-input:checked+.radio-btn {
+  background-color: #000;
+  transition: 0.2s ease;
+}
+
+.radio-input:checked+.radio-btn .radio-span {
+  color: #fff;
+  transition: 0.2s ease;
+}
+
+/* Heart Checkbox Style */
+.heart-checkbox-container {
+  --heart-color: rgb(255, 91, 137);
+  position: relative;
+  width: 30px;
+  /* Scaled down from 50px to fit table cells */
+  height: 30px;
+  transition: .3s;
+  display: inline-block;
+}
+
+.heart-checkbox-container .checkbox {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 20;
+  cursor: pointer;
+  margin: 0;
+  /* Reset margin */
+}
+
+.heart-checkbox-container .svg-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heart-checkbox-container .svg-outline,
+.heart-checkbox-container .svg-filled {
+  fill: var(--heart-color);
+  position: absolute;
+  width: 24px;
+  /* Ensure SVGs fit */
+  height: 24px;
+}
+
+.heart-checkbox-container .svg-filled {
+  animation: keyframes-svg-filled 1s;
+  display: none;
+}
+
+.heart-checkbox-container .svg-celebrate {
+  position: absolute;
+  animation: keyframes-svg-celebrate .5s;
+  animation-fill-mode: forwards;
+  display: none;
+  stroke: var(--heart-color);
+  fill: var(--heart-color);
+  stroke-width: 2px;
+  width: 100%;
+  /* Scale celebrate effect */
+  height: 100%;
+}
+
+.heart-checkbox-container .checkbox:checked~.svg-container .svg-filled {
+  display: block;
+}
+
+.heart-checkbox-container .checkbox:checked~.svg-container .svg-celebrate {
+  display: block;
+}
+
+@keyframes keyframes-svg-filled {
+  0% {
+    transform: scale(0);
+  }
+
+  25% {
+    transform: scale(1.2);
+  }
+
+  50% {
+    transform: scale(1);
+    filter: brightness(1.5);
+  }
+}
+
+@keyframes keyframes-svg-celebrate {
+  0% {
+    transform: scale(0);
+  }
+
+  50% {
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+    display: none;
+  }
+}
+
+/* Brutalist Input Style - From Uiverse.io by zaeniahmad-id */
+.brutal-input-container {
+  position: relative;
+  width: 100%;
+  max-width: 270px;
+}
+
+.brutal-input {
+  width: 100%;
+  height: 60px;
+  padding: 12px;
+  font-size: 18px;
+  font-family: "Courier New", monospace;
+  color: #000;
+  background-color: #fff;
+  border: 4px solid #000;
+  border-radius: 0;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 8px 8px 0 #000;
+}
+
+.brutal-input::placeholder {
+  color: #888;
+}
+
+.brutal-input:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 12px 12px 0 #000;
+}
+
+.brutal-input:focus {
+  background-color: #010101;
+  color: #fff;
+  border-color: #d6d9dd;
+}
+
+.brutal-input:focus::placeholder {
+  color: #fff;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  1%,
+  3%,
+  5%,
+  7%,
+  9%,
+  11%,
+  13%,
+  15%,
+  17%,
+  19%,
+  21%,
+  23%,
+  25%,
+  27%,
+  29%,
+  31%,
+  33%,
+  35%,
+  37%,
+  39%,
+  41%,
+  43%,
+  45%,
+  47%,
+  49%,
+  51%,
+  53%,
+  55%,
+  57%,
+  59%,
+  61%,
+  63%,
+  65%,
+  67%,
+  69%,
+  71%,
+  73%,
+  75%,
+  77%,
+  79%,
+  81%,
+  83%,
+  85%,
+  87%,
+  89%,
+  91%,
+  93%,
+  95%,
+  97%,
+  99% {
+    transform: translateX(-5px);
+  }
+
+  2%,
+  4%,
+  6%,
+  8%,
+  10%,
+  12%,
+  14%,
+  16%,
+  18%,
+  20%,
+  22%,
+  24%,
+  26%,
+  28%,
+  30%,
+  32%,
+  34%,
+  36%,
+  38%,
+  40%,
+  42%,
+  44%,
+  46%,
+  48%,
+  50%,
+  52%,
+  54%,
+  56%,
+  58%,
+  60%,
+  62%,
+  64%,
+  66%,
+  68%,
+  70%,
+  72%,
+  74%,
+  76%,
+  78%,
+  80%,
+  82%,
+  84%,
+  86%,
+  88%,
+  90%,
+  92%,
+  94%,
+  96%,
+  98% {
+    transform: translateX(5px);
+  }
+}
+
+.brutal-input:focus {
+  animation: shake 0.6s ease-in-out;
+}
+
+@keyframes glitch {
+
+  0%,
+  10%,
+  27%,
+  35%,
+  52%,
+  50%,
+  72%,
+  80%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+
+  7% {
+    transform: skew(-0.5deg, -0.9deg);
+    opacity: 0.75;
+  }
+
+  30% {
+    transform: skew(0.8deg, -0.1deg);
+    opacity: 0.75;
+  }
+
+  55% {
+    transform: skew(-1deg, 0.2deg);
+    opacity: 0.75;
+  }
+
+  75% {
+    transform: skew(0.4deg, 1deg);
+    opacity: 0.75;
+  }
+}
+
+.brutal-input:not(:placeholder-shown) {
+  animation: glitch 0.7s linear infinite;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.brutal-input-container::after {
+  content: "|";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #000;
+  animation: blink 0.7s step-end infinite;
+  pointer-events: none;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.brutal-input:focus+.brutal-input-container::after {
+  color: #fff;
+}
