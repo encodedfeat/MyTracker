@@ -48,7 +48,7 @@ export function LogProgressView({
     const cumulativeSubtopics = subtopics.filter(st => st.type === 'cumulative');
 
     const [subtopicId, setSubtopicId] = useState('');
-    const [value, setValue] = useState(1); // used as count of logs to add
+    const [value, setValue] = useState(1);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [deleteLogNumber, setDeleteLogNumber] = useState('');
     const [deleteError, setDeleteError] = useState('');
@@ -56,29 +56,28 @@ export function LogProgressView({
     const selectedSubtopic = cumulativeSubtopics.find(st => st.id === subtopicId);
     const currentDate = getLocalDateString(new Date());
 
-
     // Filter logs for today for the specific delete-multiple feature
     const todayLogs = dailyLogs.filter(
         log => log.date === currentDate && log.subtopicId === subtopicId,
     );
+    // Sum of all values logged today for this subtopic
+    const todayTotal = todayLogs.reduce((sum, log) => sum + Number(log.value), 0);
 
-    // Add "value" number of logs (each with value 1) when user submits
+    // Add a single log with the integer value entered
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!subtopicId || isReadOnly || isFuture) return;
-        const count = Number(value);
+        const count = Math.floor(Number(value));
         if (isNaN(count) || count < 1) {
-            alert('Please enter a positive number of logs to add.');
+            alert('Please enter a positive integer to add.');
             return;
         }
         try {
-            for (let i = 0; i < count; i++) {
-                await onAddLog({ subtopicId, date: currentDate, value: 1 });
-            }
+            await onAddLog({ subtopicId, date: currentDate, value: count });
             setValue(1);
-            alert(`Added ${count} log${count > 1 ? 's' : ''}.`);
+            alert(`Added a log with value ${count}.`);
         } catch (error) {
-            console.error('Failed to add logs:', error);
+            console.error('Failed to add log:', error);
             alert('Failed to save your progress. Please try again.');
         }
     };
@@ -93,17 +92,18 @@ export function LogProgressView({
         setShowDeleteDialog(true);
     };
 
-    // Delete up to the number entered by the user (e.g., 4 deletes the first 4 logs)
+    // Delete entries — user picks how many entries to remove (newest first)
     const handleDeleteSubmit = async () => {
-        const num = parseInt(deleteLogNumber);
+        const num = parseInt(deleteLogNumber, 10);
         if (isNaN(num) || num < 1 || num > todayLogs.length) {
             setDeleteError(
-                `Enter a number between 1 and ${todayLogs.length} to delete logs.`,
+                `Enter a number between 1 and ${todayLogs.length} (you have ${todayLogs.length} ${todayLogs.length === 1 ? 'entry' : 'entries'} today).`,
             );
             return;
         }
+        // Sort newest first so we delete the most recent entries
         const sorted = [...todayLogs].sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
         const logsToDelete = sorted.slice(0, num);
         try {
@@ -131,7 +131,6 @@ export function LogProgressView({
                     backgroundRepeat: 'no-repeat'
                 }}
             >
-                {/* Overlay */}
                 <div className="absolute inset-0  pointer-events-none" />
 
                 <div className="relative z-10">
@@ -146,7 +145,7 @@ export function LogProgressView({
                         className="button-89 text-lg"
                         style={{ '--color': '#000000', color: 'black', backgroundColor: 'white' } as React.CSSProperties}
                     >
-                        Manage Goals & Subtopics
+                        Manage Goals &amp; Subtopics
                     </button>
                 </div>
             </div>
@@ -163,7 +162,6 @@ export function LogProgressView({
                 backgroundRepeat: 'no-repeat'
             }}
         >
-            {/* Brushed Metal Effect Overlay */}
             <div className="absolute inset-0  pointer-events-none" />
 
             <div className="relative p-8 md:p-12">
@@ -189,7 +187,6 @@ export function LogProgressView({
                     </div>
                 ) : (
                     <div className="max-w-2xl mx-auto">
-                        {/* Log Input Form */}
                         <div className="space-y-6">
                             <div
                                 className="relative overflow-hidden p-6 rounded-lg border border-black backdrop-blur-sm"
@@ -200,7 +197,6 @@ export function LogProgressView({
                                     backgroundRepeat: 'no-repeat'
                                 }}
                             >
-                                {/* Overlay for better text readability */}
                                 <div className="absolute inset-0  pointer-events-none" />
                                 <div className="relative z-10">
                                     <h3 className="text-lg font-semibold text-black mb-4">Add New Log</h3>
@@ -219,23 +215,35 @@ export function LogProgressView({
                                                 <div className="absolute inset-0 " />
                                                 <div className="relative z-10 p-8 text-center">
                                                     <h3 className="text-2xl font-black text-black mb-4 uppercase tracking-wider">Delete Logs</h3>
-                                                    <p className="text-slate-800 mb-4 text-lg">
-                                                        You have {todayLogs.length} log{todayLogs.length > 1 ? 's' : ''} today for{' '}
-                                                        <span className="font-bold text-black">{selectedSubtopic?.name}</span>.
+                                                    <p className="text-slate-800 mb-2 text-lg">
+                                                        Subtopic: <span className="font-bold text-black">{selectedSubtopic?.name}</span>
+                                                    </p>
+                                                    <p className="text-slate-700 mb-1 text-base">
+                                                        Today's total: <span className="font-bold text-black">{todayTotal} {selectedSubtopic?.unit || 'units'}</span>
+                                                    </p>
+                                                    <p className="text-slate-600 text-sm mb-4">
+                                                        ({todayLogs.length} {todayLogs.length === 1 ? 'entry' : 'entries'} logged today)
                                                     </p>
                                                     <p className="text-slate-700 text-sm mb-4">
-                                                        Enter the number of logs to delete (1‑{todayLogs.length}):
+                                                        How many entries to delete? (1–{todayLogs.length})
                                                     </p>
                                                     <input
                                                         type="number"
-                                                        value={deleteLogNumber}
-                                                        onChange={e => {
-                                                            setDeleteLogNumber(e.target.value);
-                                                            setDeleteError('');
-                                                        }}
+                                                        step="1"
                                                         min="1"
                                                         max={todayLogs.length}
-                                                        placeholder={`1-${todayLogs.length}`}
+                                                        value={deleteLogNumber}
+                                                        onChange={e => {
+                                                            const raw = e.target.value.replace(/[^0-9]/g, '');
+                                                            setDeleteLogNumber(raw);
+                                                            setDeleteError('');
+                                                        }}
+                                                        onKeyDown={e => {
+                                                            if (['.', '-', '+', 'e', 'E'].includes(e.key)) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                        placeholder={`1–${todayLogs.length}`}
                                                         className="w-full px-4 py-2 bg-white/50 border border-slate-500 text-black rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-white text-center text-lg font-bold"
                                                         autoFocus
                                                     />
@@ -295,11 +303,22 @@ export function LogProgressView({
                                             <div className="brutal-input-container">
                                                 <input
                                                     type="number"
-                                                    step="0.01"
-                                                    value={value}
-                                                    onChange={(e) => setValue(Number(e.target.value))}
+                                                    step="1"
+                                                    min="1"
+                                                    value={value || ''}
+                                                    onChange={(e) => {
+                                                        // Strip anything that's not a digit
+                                                        const raw = e.target.value.replace(/[^0-9]/g, '');
+                                                        setValue(raw ? parseInt(raw, 10) : 0);
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        // Block decimal, minus, plus, and the letter 'e' (used in scientific notation)
+                                                        if (['.', '-', '+', 'e', 'E'].includes(e.key)) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
                                                     className="brutal-input"
-                                                    placeholder="Enter amount..."
+                                                    placeholder="Enter whole number..."
                                                     disabled={isReadOnly}
                                                 />
                                             </div>
@@ -326,20 +345,17 @@ export function LogProgressView({
                                 </div>
                             </div>
 
-                            {todayLogs.length > 0 && (
+                            {todayTotal > 0 && (
                                 <p className="text-sm text-slate-700 text-center">
-                                    You have logged <span className="font-bold text-black font-bold">{todayLogs.length}</span>{' '}
-                                    log{todayLogs.length > 1 ? 's' : ''} today for {selectedSubtopic?.name}
+                                    Today's total for <span className="font-bold text-black">{selectedSubtopic?.name}</span>:{' '}
+                                    <span className="font-bold text-black">{todayTotal}</span>{' '}
+                                    {selectedSubtopic?.unit || 'units'} ({todayLogs.length} {todayLogs.length === 1 ? 'entry' : 'entries'})
                                 </p>
                             )}
                         </div>
-
                     </div>
                 )}
             </div>
         </div>
     );
 }
-
-
-
