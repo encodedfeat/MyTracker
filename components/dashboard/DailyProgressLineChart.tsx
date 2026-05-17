@@ -242,8 +242,8 @@ export function DailyProgressLineChart({
           </div>
         </div>
 
-        <div className="flex-1 relative" style={{ minHeight: '300px' }}>
-          <ResponsiveContainer width="100%" height="100%">
+        <div style={{ width: '100%', height: '320px' }}>
+          <ResponsiveContainer width="100%" height={320}>
             <AreaChart
               data={transformedData}
               margin={{ top: 10, right: 40, left: 0, bottom: 5 }}

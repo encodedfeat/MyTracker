@@ -5,8 +5,7 @@ import React from 'react';
 import {
   PieChart,
   Pie,
-  Cell,
-  ResponsiveContainer
+  Cell
 } from 'recharts';
 
 // Define the type for the subtopic prop
@@ -62,8 +61,7 @@ export function SubtopicProgressCircle({ subtopic, categoryName }: SubtopicProgr
       )}
 
       <div className="relative w-32 h-32 mb-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+        <PieChart width={128} height={128}>
             <Pie
               data={data}
               cx="50%"
@@ -86,7 +84,6 @@ export function SubtopicProgressCircle({ subtopic, categoryName }: SubtopicProgr
               ))}
             </Pie>
           </PieChart>
-        </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center flex-col">
           <span className="text-2xl font-bold" style={{ color: colorPair[0] }}>
             {percentRounded}%

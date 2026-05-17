@@ -48,8 +48,8 @@ export function MonthlyProgressCard({
           }
         </select >
       </div >
-      <div className="flex-1 relative" style={{ minHeight: '200px' }}>
-        <ResponsiveContainer>
+      <div style={{ width: '100%', height: '240px' }}>
+        <ResponsiveContainer width="100%" height={240}>
           <PieChart>
             <Pie
               data={data}

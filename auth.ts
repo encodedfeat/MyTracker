@@ -1,18 +1,13 @@
 
 import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-
+import { authConfig } from "./auth.config"
 import User from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-  ],
+  ...authConfig,
   callbacks: {
+    ...authConfig.callbacks,
     async signIn({ user, account }) {
       console.log("SignIn Callback Started", { user, account });
       if (account?.provider === "google") {
