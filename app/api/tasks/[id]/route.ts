@@ -3,6 +3,7 @@ import dbConnect from '@/lib/dbConnect';
 import Task from '@/models/Task';
 import Log from '@/models/Log';
 import { isValidObjectId } from 'mongoose';
+import { auth } from "@/auth";
 
 export async function PUT(
     request: Request,
@@ -10,6 +11,10 @@ export async function PUT(
 ) {
     const params = await props.params;
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         await dbConnect();
         const { id } = params;
         const body = await request.json();
@@ -44,7 +49,8 @@ export async function PUT(
                     subtopicId: updatedTask.subtopicId,
                     date: logDate,
                     value: 1,
-                    taskId: updatedTask._id // Link log to this task
+                    taskId: updatedTask._id, // Link log to this task
+                    userId: session.user.id
                 });
             } else {
                 // Task marked as UNCOMPLETED -> Delete the Log

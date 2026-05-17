@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Log from '@/models/Log';
+import { auth } from "@/auth";
 
 export async function POST(request: Request) {
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         await dbConnect();
         const { subtopicId, date, value } = await request.json();
 
@@ -48,7 +53,8 @@ export async function POST(request: Request) {
             const log = await Log.create({
                 subtopicId,
                 date,
-                value
+                value,
+                userId: session.user.id
             });
 
             const serializedLog = {
