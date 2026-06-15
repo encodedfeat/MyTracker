@@ -48,7 +48,7 @@ export function MonthlyProgressCard({
           }
         </select >
       </div >
-      <div style={{ width: '100%', height: '240px' }}>
+      <div className="relative" style={{ width: '100%', height: '240px' }}>
         <ResponsiveContainer width="100%" height={240}>
           <PieChart>
             <Pie
@@ -73,7 +73,7 @@ export function MonthlyProgressCard({
             </Pie>
           </PieChart>
         </ResponsiveContainer>
-        <div className="absolute inset-0 flex items-center justify-center flex-col">
+        <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
           <span className="text-5xl font-bold text-black font-bold">
             {percentRounded}%
           </span>

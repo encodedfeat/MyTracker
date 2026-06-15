@@ -62,28 +62,28 @@ export function SubtopicProgressCircle({ subtopic, categoryName }: SubtopicProgr
 
       <div className="relative w-32 h-32 mb-4">
         <PieChart width={128} height={128}>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={48}
-              outerRadius={60}
-              dataKey="value"
-              startAngle={90}
-              endAngle={-270}
-              stroke="none"
-              cornerRadius={4}
-              paddingAngle={percentRounded > 0 && percentRounded < 100 ? 5 : 0}
-            >
-              {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={colorPair[index % colorPair.length]}
-                  style={{ outline: 'none' }}
-                />
-              ))}
-            </Pie>
-          </PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={48}
+            outerRadius={60}
+            dataKey="value"
+            startAngle={90}
+            endAngle={-270}
+            stroke="none"
+            cornerRadius={4}
+            paddingAngle={percentRounded > 0 && percentRounded < 100 ? 5 : 0}
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={colorPair[index % colorPair.length]}
+                style={{ outline: 'none' }}
+              />
+            ))}
+          </Pie>
+        </PieChart>
         <div className="absolute inset-0 flex items-center justify-center flex-col">
           <span className="text-2xl font-bold" style={{ color: colorPair[0] }}>
             {percentRounded}%
@@ -98,5 +98,3 @@ export function SubtopicProgressCircle({ subtopic, categoryName }: SubtopicProgr
     </div>
   );
 }
-
-

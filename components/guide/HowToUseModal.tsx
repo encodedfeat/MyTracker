@@ -136,8 +136,8 @@ export function HowToUseModal({ isOpen, onClose }: HowToUseModalProps) {
                                 onClick={handlePrev}
                                 disabled={currentStep === 0}
                                 className={`flex items-center space-x-2 px-4 py-2 font-bold text-sm uppercase transition-colors ${currentStep === 0
-                                        ? 'text-slate-400 cursor-not-allowed'
-                                        : 'text-black hover:bg-slate-100 border-2 border-transparent hover:border-black'
+                                    ? 'text-slate-400 cursor-not-allowed'
+                                    : 'text-black hover:bg-slate-100 border-2 border-transparent hover:border-black'
                                     }`}
                             >
                                 <ChevronLeft size={20} strokeWidth={3} />
