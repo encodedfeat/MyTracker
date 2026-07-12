@@ -24,7 +24,7 @@ export async function PUT(
             return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
         }
 
-        const subtopic = await Subtopic.findByIdAndUpdate(id, body, { new: true });
+        const subtopic = await Subtopic.findOneAndUpdate({ _id: id, userId: session.user.id }, body, { new: true });
         if (!subtopic) {
             return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
         }
@@ -52,14 +52,14 @@ export async function DELETE(
             return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
         }
 
-        // Delete related tasks and logs
-        await Task.deleteMany({ subtopicId: id });
-        await Log.deleteMany({ subtopicId: id });
-
-        const subtopic = await Subtopic.findByIdAndDelete(id);
+        const subtopic = await Subtopic.findOneAndDelete({ _id: id, userId: session.user.id });
         if (!subtopic) {
             return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
         }
+
+        // Delete related tasks and logs
+        await Task.deleteMany({ subtopicId: id, userId: session.user.id });
+        await Log.deleteMany({ subtopicId: id, userId: session.user.id });
 
         return NextResponse.json({ message: 'Subtopic deleted' });
     } catch (error) {

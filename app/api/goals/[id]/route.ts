@@ -25,7 +25,7 @@ export async function PUT(
         }
 
         const updates = await request.json();
-        const goal = await Goal.findByIdAndUpdate(goalId, updates, { new: true });
+        const goal = await Goal.findOneAndUpdate({ _id: goalId, userId: session.user.id }, updates, { new: true });
 
         if (!goal) {
             return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
@@ -54,7 +54,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Invalid goal ID' }, { status: 400 });
         }
 
-        const goal = await Goal.findById(goalId);
+        const goal = await Goal.findOne({ _id: goalId, userId: authSession.user.id });
         if (!goal) {
             return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
         }
@@ -70,15 +70,15 @@ export async function DELETE(
 
             // Delete logs and tasks for these subtopics
             if (subtopicIds.length > 0) {
-                await Log.deleteMany({ subtopicId: { $in: subtopicIds } }).session(session);
-                await Task.deleteMany({ subtopicId: { $in: subtopicIds } }).session(session);
+                await Log.deleteMany({ subtopicId: { $in: subtopicIds }, userId: authSession.user.id }).session(session);
+                await Task.deleteMany({ subtopicId: { $in: subtopicIds }, userId: authSession.user.id }).session(session);
             }
 
             // Delete subtopics
-            await Subtopic.deleteMany({ goalId }).session(session);
+            await Subtopic.deleteMany({ goalId, userId: authSession.user.id }).session(session);
 
             // Delete goal
-            await Goal.findByIdAndDelete(goalId).session(session);
+            await Goal.findOneAndDelete({ _id: goalId, userId: authSession.user.id }).session(session);
 
             await session.commitTransaction();
             return NextResponse.json({ message: 'Goal deleted successfully' });

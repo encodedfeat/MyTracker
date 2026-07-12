@@ -24,13 +24,13 @@ export async function PUT(
         }
 
         // 1. Get the current task BEFORE update to check if status changed
-        const currentTask = await Task.findById(id);
+        const currentTask = await Task.findOne({ _id: id, userId: session.user.id });
         if (!currentTask) {
             return NextResponse.json({ error: 'Task not found' }, { status: 404 });
         }
 
         // 2. Update the task
-        const updatedTask = await Task.findByIdAndUpdate(id, body, { new: true });
+        const updatedTask = await Task.findOneAndUpdate({ _id: id, userId: session.user.id }, body, { new: true });
 
         if (!updatedTask) {
             return NextResponse.json({ error: 'Task not found after update' }, { status: 404 });
@@ -54,7 +54,7 @@ export async function PUT(
                 });
             } else {
                 // Task marked as UNCOMPLETED -> Delete the Log
-                await Log.findOneAndDelete({ taskId: updatedTask._id });
+                await Log.findOneAndDelete({ taskId: updatedTask._id, userId: session.user.id });
             }
         }
 
@@ -82,13 +82,13 @@ export async function DELETE(
             return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
         }
 
-        // Delete related logs first
-        await Log.deleteMany({ taskId: id });
-
-        const task = await Task.findByIdAndDelete(id);
+        const task = await Task.findOneAndDelete({ _id: id, userId: session.user.id });
         if (!task) {
             return NextResponse.json({ error: 'Task not found' }, { status: 404 });
         }
+
+        // Delete related logs
+        await Log.deleteMany({ taskId: id, userId: session.user.id });
 
         return NextResponse.json({ message: 'Task deleted' });
     } catch (error) {

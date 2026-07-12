@@ -22,7 +22,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
         }
 
-        const log = await Log.findByIdAndDelete(id);
+        const log = await Log.findOneAndDelete({ _id: id, userId: session.user.id });
         if (!log) {
             return NextResponse.json({ error: 'Log not found' }, { status: 404 });
         }
