@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { GoalIcon } from '@/components/ui/GoalIcon';
-import { Trash2, Edit2, Check, X, Plus } from 'lucide-react';
+import { Trash2, Edit2, Check, X, Plus, HelpCircle } from 'lucide-react';
 
 interface Goal {
   id: string;
@@ -93,8 +93,14 @@ export function ManageGoals({ goals, onAddGoal, onDeleteGoal, onUpdateGoal, isRe
         <div className="absolute inset-0  pointer-events-none" />
 
         <div className="relative p-4 md:p-12">
-          <div className="flex items-center justify-center mb-10">
+          <div className="flex flex-wrap items-center justify-center mb-10 gap-3">
             <h2 className="text-3xl font-bold text-black tracking-tight">Manage Categories</h2>
+            <div className="relative group cursor-help outline-none flex items-center" tabIndex={0}>
+                <HelpCircle size={24} className="text-slate-400 group-hover:text-black transition-colors" />
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 md:w-72 p-3 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-20 shadow-[4px_4px_0_0_#000] border-2 border-white font-medium text-center">
+                    Create and manage the high-level categories for your goals.
+                </div>
+            </div>
             {isReadOnly && (
               <span className="ml-4 bg-amber-500/20 text-amber-500 text-xs font-bold px-2 py-1 rounded border border-amber-500/50">
                 READ ONLY
@@ -228,7 +234,7 @@ export function ManageGoals({ goals, onAddGoal, onDeleteGoal, onUpdateGoal, isRe
                           </span>
 
                           {!isReadOnly && (
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex space-x-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
                               <button
                                 onClick={() => handleStartEdit(goal)}
                                 className="p-1.5 text-slate-700 hover:text-black hover:bg-slate-200 rounded-lg transition-colors"

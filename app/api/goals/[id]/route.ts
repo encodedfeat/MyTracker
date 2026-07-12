@@ -5,6 +5,7 @@ import Subtopic from '@/models/Subtopic';
 import Task from '@/models/Task';
 import Log from '@/models/Log';
 import { isValidObjectId } from 'mongoose';
+import { auth } from "@/auth";
 
 export async function PUT(
     request: Request,
@@ -12,6 +13,10 @@ export async function PUT(
 ) {
     const params = await props.params;
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         await dbConnect();
         const goalId = params.id;
 
@@ -38,6 +43,10 @@ export async function DELETE(
 ) {
     const params = await props.params;
     try {
+        const authSession = await auth();
+        if (!authSession?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         await dbConnect();
         const goalId = params.id;
 

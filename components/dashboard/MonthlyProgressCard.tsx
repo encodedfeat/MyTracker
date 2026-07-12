@@ -37,7 +37,7 @@ export function MonthlyProgressCard({
         <select
           value={selectedCategoryId}
           onChange={(e) => onCategoryChange?.(e.target.value)}
-          className="bg-slate-50 text-slate-800 text-sm rounded-lg border border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 block p-2 outline-none min-w-[150px]"
+          className="select-55 min-w-[150px] !h-10 !py-1 !text-sm"
         >
           <option value="">--select category--</option>
           {categories.map((category) => (

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getLocalDateString } from '@/lib/dateUtils';
+import { HelpCircle } from 'lucide-react';
 
 interface Subtopic {
     id: string;
@@ -165,8 +166,12 @@ export function LogProgressView({
             <div className="absolute inset-0  pointer-events-none" />
 
             <div className="relative p-8 md:p-12">
-                <div className="flex items-center justify-center mb-10 relative">
+                <div className="flex flex-wrap items-center justify-center mb-10 relative gap-3 group cursor-help outline-none" tabIndex={0}>
                     <h2 className="text-3xl font-bold text-black tracking-tight">Log Your Cumulative</h2>
+                    <HelpCircle size={24} className="text-slate-400 group-hover:text-black transition-colors" />
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 md:w-72 p-3 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-20 shadow-[4px_4px_0_0_#000] border-2 border-white font-medium text-center">
+                        Add cumulative progress (e.g. reading pages, study hours) toward your monthly target.
+                    </div>
                     {isReadOnly && (
                         <span className="absolute right-0 top-1/2 -translate-y-1/2 bg-amber-500/20 text-amber-500 text-xs font-bold px-2 py-1 rounded border border-amber-500/50">
                             READ ONLY

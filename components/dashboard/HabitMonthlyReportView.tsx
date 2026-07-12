@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, HelpCircle } from 'lucide-react';
 
 interface MonthDay {
     date: string;
@@ -214,7 +214,15 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
 
             <div className="relative">
                 <div className="p-4 border-b border-slate-300/50 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-black">Monthly Habit Report</h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-semibold text-black">Monthly Habit Report</h2>
+                        <div className="relative group cursor-help outline-none flex items-center" tabIndex={0}>
+                            <HelpCircle size={20} className="text-slate-400 group-hover:text-black transition-colors" />
+                            <div className="absolute left-0 top-full mt-2 w-64 md:w-72 p-3 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-20 shadow-[4px_4px_0_0_#000] border-2 border-white font-medium text-left">
+                                Track your monthly consistency for each habit. Click the checkboxes to log your progress!
+                            </div>
+                        </div>
+                    </div>
                     {isReadOnly && (
                         <span className="bg-amber-500/20 text-amber-500 text-xs font-bold px-2 py-1 rounded border border-amber-500/50">
                             READ ONLY
@@ -237,20 +245,20 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
                             <table className="w-full text-sm text-left text-slate-800">
                                 <thead className="text-xs uppercase bg-white/80 text-slate-700 backdrop-blur-sm">
                                     <tr>
-                                        <th scope="col" className="px-4 py-3 font-medium sticky left-0 bg-white/90 z-10 min-w-[200px]">
+                                        <th scope="col" className="px-3 md:px-4 py-3 font-medium sticky left-0 bg-white z-20 min-w-[100px] md:min-w-[200px]">
                                             Your Habits
                                         </th>
                                         {daysHeader.map((day) => (
                                             <th
                                                 key={day.date}
                                                 scope="col"
-                                                className="px-2 py-3 text-center min-w-[40px]"
+                                                className="px-1 md:px-2 py-3 text-center min-w-[32px] md:min-w-[40px]"
                                                 ref={day.isToday ? todayRef : null}
                                             >
                                                 {day.dayNum}
                                             </th>
                                         ))}
-                                        <th scope="col" className="px-4 py-3 font-medium text-center min-w-[100px] sticky right-0 bg-white/90 z-10">
+                                        <th scope="col" className="px-2 md:px-4 py-3 font-medium text-center min-w-[70px] md:min-w-[100px] sticky right-0 bg-white z-20">
                                             Analysis
                                         </th>
                                     </tr>
@@ -260,7 +268,7 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
                                         <React.Fragment key={categoryName}>
                                             {/* Category Header Row */}
                                             <tr className="bg-slate-50/50 border-t-2 border-slate-300">
-                                                <td className="px-4 py-3 font-bold text-black sticky left-0 bg-slate-50/90 z-20">
+                                                <td className="px-3 md:px-4 py-3 font-bold text-black sticky left-0 bg-slate-50 z-20">
                                                     {categoryName}
                                                 </td>
                                                 <td colSpan={daysHeader.length + 1} className="px-4 py-3"></td>
@@ -272,8 +280,8 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
 
                                                 return (
                                                     <tr key={habit.id} className="border-b-2 border-slate-200 last:border-b-0">
-                                                        <td className="px-4 py-3 pl-8 font-medium text-black sticky left-0  backdrop-blur-sm z-10 border-r-2 border-slate-200">
-                                                            <span className="text-sm md:hidden">{truncateName(habit.name, 5)}</span>
+                                                        <td className="px-3 md:px-4 py-3 pl-4 md:pl-8 font-medium text-black sticky left-0 bg-white z-20 border-r-2 border-slate-200">
+                                                            <span className="text-sm md:hidden">{truncateName(habit.name, 10)}</span>
                                                             <span className="text-sm hidden md:block">{truncateName(habit.name, 20)}</span>
                                                         </td>
                                                         {habit.monthDays.map((day) => {
@@ -284,7 +292,7 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
                                                             return (
                                                                 <td
                                                                     key={day.date}
-                                                                    className={`px-2 py-3 text-center `}
+                                                                    className={`px-1 md:px-2 py-2 md:py-3 text-center `}
                                                                 >
                                                                     <div className="flex justify-center items-center h-full">
                                                                         <div
@@ -321,7 +329,7 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
                                                                 </td>
                                                             );
                                                         })}
-                                                        <td className="px-4 py-3 text-center font-bold text-black sticky right-0  backdrop-blur-sm z-10 border-l-2 border-slate-200">
+                                                        <td className="px-2 md:px-4 py-3 text-center font-bold text-black sticky right-0 bg-white z-20 border-l-2 border-slate-200">
                                                             {completedCount}/{totalDays}
                                                         </td>
                                                     </tr>

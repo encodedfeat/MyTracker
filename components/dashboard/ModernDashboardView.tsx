@@ -9,7 +9,7 @@ import { DailyProgressLineChart } from './DailyProgressLineChart';
 import { HabitTrackerCard } from './HabitTrackerCard';
 import { SubtopicProgressCircle } from './SubtopicProgressCircle';
 import { HabitSummaryCard } from './HabitSummaryCard';
-
+import { DailyFocusCard } from './DailyFocusCard';
 import { HabitMonthlyReportView } from './HabitMonthlyReportView';
 
 interface SubtopicProgress {
@@ -39,6 +39,22 @@ interface Task {
   completed: boolean;
 }
 
+interface DailyPlan {
+  id: string;
+  userId: string;
+  date: string;
+  taskIds: string[];
+  subtopicIds: string[];
+}
+
+interface Log {
+  id: string;
+  subtopicId: string;
+  date: string;
+  taskId?: string;
+  value: number;
+}
+
 interface ModernDashboardViewProps {
   subtopicProgress: SubtopicProgress[];
   overallAveragePercent: number;
@@ -53,6 +69,10 @@ interface ModernDashboardViewProps {
   hasData: boolean;
   goals: Goal[];
   tasks: Task[];
+  dailyLogs: Log[];
+  dailyPlans: DailyPlan[];
+  selectedDailyDate: Date;
+  changeDailyDate: (offset: number) => void;
 }
 
 const generateColor = (index: number): string => {
@@ -72,7 +92,11 @@ export function ModernDashboardView({
   changeMonth,
   hasData,
   goals,
-  tasks
+  tasks,
+  dailyLogs,
+  dailyPlans,
+  selectedDailyDate,
+  changeDailyDate
 }: ModernDashboardViewProps) {
 
   const router = useRouter();
@@ -130,31 +154,12 @@ export function ModernDashboardView({
       <h1 className="text-3xl md:text-4xl font-bold text-black mb-4 md:mb-0">
         {isPastMonth ? `Summary for ${monthYear}` : `Your Goals for ${monthYear}`}
       </h1>
-      <div className="flex items-center space-x-4 bg-slate-50/50 p-2 rounded-lg border border-slate-300">
-        <button
-          onClick={() => changeMonth(-1)}
-          className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-800 hover:text-black"
-          aria-label="Previous month"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <span className="text-lg font-medium text-black min-w-[140px] text-center">
-          {monthYear}
-        </span>
-        <button
-          onClick={() => changeMonth(1)}
-          className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-800 hover:text-black"
-          aria-label="Next month"
-        >
-          <ChevronRight size={24} />
-        </button>
-      </div>
     </div>
   );
 
   if (isFutureMonth) {
     return (
-      <div className="space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6">
+      <div className="space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8">
         {renderHeader()}
         <div className="text-center p-20 rounded-lg border border-black bg-white/50">
           <h2 className="text-2xl font-semibold text-slate-800">Wait for {monthYear}</h2>
@@ -166,7 +171,7 @@ export function ModernDashboardView({
 
   if (isPastMonth && !hasData) {
     return (
-      <div className="space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6">
+      <div className="space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8">
         {renderHeader()}
         <div className="text-center p-20 rounded-lg border border-black bg-white/50">
           <h2 className="text-2xl font-semibold text-slate-800">No record found</h2>
@@ -178,7 +183,7 @@ export function ModernDashboardView({
 
   if (subtopicProgress.length === 0) {
     return (
-      <div className="space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6">
+      <div className="space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8">
         {renderHeader()}
         <div
           className="relative overflow-hidden rounded-3xl border border-slate-300/50 shadow-2xl p-10 text-center animate-fadeIn"
@@ -222,8 +227,21 @@ export function ModernDashboardView({
       {/* Overlay to ensure text readability */}
       <div className="absolute inset-0  pointer-events-none" />
 
-      <div className="relative z-10 space-y-4 xl:space-y-6 animate-fadeIn px-4 xl:px-6 pb-12 pt-6">
+      <div className="relative z-10 space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8 pb-12 pt-6">
         {renderHeader()}
+        
+        {/* Daily Focus Card */}
+        <div className="mb-4 xl:mb-6">
+            <DailyFocusCard
+                dailyPlans={dailyPlans}
+                tasks={tasks}
+                subtopics={subtopicProgress}
+                goals={goals}
+                dailyLogs={dailyLogs}
+                selectedDailyDate={selectedDailyDate}
+                changeDailyDate={changeDailyDate}
+            />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6 mb-4 xl:mb-6">
           <div className="h-full">
@@ -268,7 +286,7 @@ export function ModernDashboardView({
         />
 
         {/* All non-habit progress cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {subtopicProgress
             .filter(st => st.type !== 'habit')
             .map(subtopic => (

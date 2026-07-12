@@ -54,11 +54,27 @@ interface SubtopicProgress extends Subtopic {
   completedToday: boolean;
 }
 
+interface IAdHocTask {
+  id: string;
+  name: string;
+  completed: boolean;
+}
+
+interface DailyPlan {
+  id: string;
+  userId: string;
+  date: string;
+  taskIds: string[];
+  subtopicIds: string[];
+  adHocTasks: IAdHocTask[];
+}
+
 interface GoalContextType {
   goals: Goal[];
   subtopics: Subtopic[];
   tasks: Task[];
   dailyLogs: Log[];
+  dailyPlans: DailyPlan[];
   isLoaded: boolean;
   subtopicProgress: SubtopicProgress[];
   overallAveragePercent: number;
@@ -70,7 +86,9 @@ interface GoalContextType {
 
   // Date Selection
   selectedDate: Date;
+  selectedDailyDate: Date; // For the Daily Plan feature
   changeMonth: (offset: number) => void;
+  changeDailyDate: (offset: number) => void;
   isReadOnly: boolean;
   isFuture: boolean;
 
@@ -88,6 +106,8 @@ interface GoalContextType {
   logHabit: (subtopicId: string, dateString: string) => Promise<void>;
   addLog: (log: Omit<Log, 'id'>) => Promise<void>;
   deleteLog: (logId: string) => Promise<void>;
+  saveDailyPlan: (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[]) => Promise<void>;
+  toggleAdHocTask: (dateString: string, taskId: string, currentStatus: boolean) => Promise<void>;
 }
 
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
@@ -97,10 +117,14 @@ export function GoalProvider({ children }: { children: ReactNode }) {
   const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [dailyLogs, setDailyLogs] = useState<Log[]>([]);
+  const [dailyPlans, setDailyPlans] = useState<DailyPlan[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // New state for selected month
   const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  // State for Daily Plan date
+  const [selectedDailyDate, setSelectedDailyDate] = useState(new Date());
 
   // Calculate isReadOnly based on selectedDate
   const isReadOnly = useMemo(() => {
@@ -150,6 +174,7 @@ export function GoalProvider({ children }: { children: ReactNode }) {
         setSubtopics(data.subtopics || []);
         setTasks(data.tasks || []);
         setDailyLogs(data.logs || []);
+        setDailyPlans(data.dailyPlans || []);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -164,6 +189,39 @@ export function GoalProvider({ children }: { children: ReactNode }) {
     const newDate = new Date(selectedDate);
     newDate.setMonth(newDate.getMonth() + offset);
     setSelectedDate(newDate);
+
+    // Also update the daily date to stay in sync
+    const today = new Date();
+    if (newDate.getMonth() === today.getMonth() && newDate.getFullYear() === today.getFullYear()) {
+      // If navigating back to current month, set to today
+      setSelectedDailyDate(new Date());
+    } else {
+      // Otherwise, set to the last day of the newly selected month
+      const lastDayOfMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
+      setSelectedDailyDate(lastDayOfMonth);
+    }
+  };
+
+  const changeDailyDate = (offset: number) => {
+    const newDate = new Date(selectedDailyDate);
+    newDate.setDate(newDate.getDate() + offset);
+    
+    // Check if the daily date moved outside the currently selected month
+    if (newDate.getMonth() !== selectedDate.getMonth() || newDate.getFullYear() !== selectedDate.getFullYear()) {
+      if (offset > 0) {
+        // Moving forward past the end of the month -> wrap to 1st day of the selected month
+        newDate.setFullYear(selectedDate.getFullYear());
+        newDate.setMonth(selectedDate.getMonth());
+        newDate.setDate(1);
+      } else {
+        // Moving backward past the start of the month -> wrap to last day of the selected month
+        newDate.setFullYear(selectedDate.getFullYear());
+        newDate.setMonth(selectedDate.getMonth() + 1);
+        newDate.setDate(0);
+      }
+    }
+    
+    setSelectedDailyDate(newDate);
   };
 
   // --- Handlers ---
@@ -450,6 +508,70 @@ export function GoalProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const saveDailyPlan = async (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[]) => {
+    try {
+      const response = await fetch('/api/daily-plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateString, taskIds, subtopicIds, adHocTasks })
+      });
+      if (!response.ok) throw new Error('Failed to save daily plan');
+      const newPlan = await response.json();
+      
+      setDailyPlans(prev => {
+        const existingIndex = prev.findIndex(p => p.date === dateString);
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = newPlan;
+          return updated;
+        } else {
+          return [...prev, newPlan];
+        }
+      });
+    } catch (error) {
+      console.error('Error saving daily plan:', error);
+    }
+  };
+
+  const toggleAdHocTask = async (dateString: string, taskId: string, currentStatus: boolean) => {
+    try {
+      // Optimistic update
+      setDailyPlans(prev => {
+        const existingIndex = prev.findIndex(p => p.date === dateString);
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          const plan = { ...updated[existingIndex] };
+          plan.adHocTasks = plan.adHocTasks.map(t => 
+            t.id === taskId ? { ...t, completed: !currentStatus } : t
+          );
+          updated[existingIndex] = plan;
+          return updated;
+        }
+        return prev;
+      });
+
+      const response = await fetch('/api/daily-plans/ad-hoc/toggle', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateString, taskId, completed: !currentStatus })
+      });
+
+      if (!response.ok) {
+        // Revert on failure
+        const data = await response.json();
+        console.error('Failed to toggle ad-hoc task:', data);
+        const res = await fetch(`/api/data?month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDailyPlans(data.dailyPlans || []);
+        }
+        throw new Error('Failed to toggle ad-hoc task');
+      }
+    } catch (error) {
+      console.error('Error toggling ad-hoc task:', error);
+    }
+  };
+
   // --- Data Calculation Memos ---
 
   const { overallAveragePercent, subtopicProgress } = useMemo(() => {
@@ -647,6 +769,7 @@ export function GoalProvider({ children }: { children: ReactNode }) {
 
       chartData.push({
         name: `Day ${day}`,
+        fullDate: currentDateString,
         percent: Math.min(overallDailyPercent, 100),
         subtopics: subtopicsData
       });
@@ -662,12 +785,15 @@ export function GoalProvider({ children }: { children: ReactNode }) {
       subtopics,
       tasks,
       dailyLogs,
+      dailyPlans,
       isLoaded,
       subtopicProgress,
       overallAveragePercent,
       dailyLineChartData,
       selectedDate,
+      selectedDailyDate,
       changeMonth,
+      changeDailyDate,
       isReadOnly,
       isFuture,
       addGoal,
@@ -682,7 +808,9 @@ export function GoalProvider({ children }: { children: ReactNode }) {
       updateTask,
       logHabit,
       addLog,
-      deleteLog
+      deleteLog,
+      saveDailyPlan,
+      toggleAdHocTask
     }}>
       {children}
     </GoalContext.Provider>

@@ -71,6 +71,10 @@ export async function DELETE(
 ) {
     const params = await props.params;
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         await dbConnect();
         const { id } = params;
 

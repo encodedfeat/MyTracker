@@ -8,8 +8,11 @@ import { Providers } from '@/components/Providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'My Goal Tracker',
-  description: 'Your personal goal tracker',
+  title: {
+    template: '%s | MyTracker',
+    default: 'MyTracker',
+  },
+  description: 'Track your goals, habits, and tasks daily.',
 };
 
 export default function RootLayout({

@@ -161,10 +161,10 @@ export function DailyProgressLineChart({
     >
       <div className="absolute inset-0  pointer-events-none" />
       <div className="relative z-10 flex flex-col h-full">
-        <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:flex sm:flex-row items-center gap-2 sm:gap-3 mb-6 w-full">
 
           {/* Category Dropdown */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select
               value={selectedCategoryId}
               onChange={(e) => {
@@ -177,41 +177,40 @@ export function DailyProgressLineChart({
                   }
                 }
               }}
-              className="appearance-none flex items-center gap-2 px-4 py-2 rounded-full bg-transparent border border-[#3B82F6] text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors cursor-pointer text-sm font-medium pr-10 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
-              style={{ minWidth: '160px' }}
+              className="select-55 !h-10 !py-1 !text-sm min-w-[150px] sm:min-w-[180px]"
             >
-              <option value="" className="bg-[#15202B] text-black">All Categories</option>
+              <option value="" className="bg-white text-black font-medium">All Categories</option>
               {relevantCategories.map(goal => (
-                <option key={goal.id} value={goal.id} className="bg-[#15202B] text-black">
+                <option key={goal.id} value={goal.id} className="bg-white text-black font-medium">
                   {goal.name}
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#3B82F6]" />
           </div>
 
           {/* Custom Subtopic Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative w-full sm:w-auto" ref={dropdownRef}>
             <button
               onClick={() => setIsSubtopicDropdownOpen(!isSubtopicDropdownOpen)}
-              className="flex items-center justify-between gap-2 px-4 py-2 rounded-full bg-transparent border border-[#10B981] text-[#10B981] hover:bg-[#10B981]/10 transition-colors cursor-pointer text-sm font-medium min-w-[200px]"
+              className="select-55 !flex !items-center !justify-between !h-10 !py-1 !text-sm !font-bold min-w-[150px] sm:min-w-[180px] !pr-3"
+              style={{ backgroundImage: 'none' }}
             >
-              <span className="truncate max-w-[180px]">
+              <span className="truncate">
                 {selectedSubtopic ? selectedSubtopic.name : "Select subtopic..."}
               </span>
-              <ChevronDown className="w-4 h-4 text-[#10B981]" />
+              <ChevronDown className="w-4 h-4 text-black flex-shrink-0" />
             </button>
 
             {isSubtopicDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-[280px] max-h-[300px] overflow-y-auto bg-[#15202B] border border-slate-300 rounded-lg shadow-xl z-50 custom-scrollbar">
+              <div className="absolute top-full left-0 mt-2 w-[280px] max-h-[300px] overflow-y-auto bg-white border-2 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] z-50 custom-scrollbar">
                 <div
                   onClick={() => {
                     onSubtopicChange('');
                     setIsSubtopicDropdownOpen(false);
                   }}
-                  className={`px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors ${!selectedSubtopicId ? 'bg-slate-50' : ''}`}
+                  className={`px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors ${!selectedSubtopicId ? 'bg-slate-100' : ''}`}
                 >
-                  <span className="text-black text-sm">None</span>
+                  <span className="text-black text-sm font-bold">None</span>
                 </div>
 
                 {filteredSubtopics?.map(st => (
@@ -221,11 +220,11 @@ export function DailyProgressLineChart({
                       onSubtopicChange(st.id);
                       setIsSubtopicDropdownOpen(false);
                     }}
-                    className={`px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors border-t border-black ${selectedSubtopicId === st.id ? 'bg-slate-50' : ''}`}
+                    className={`px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors border-t border-slate-200 ${selectedSubtopicId === st.id ? 'bg-slate-100' : ''}`}
                   >
                     <div className="flex flex-col">
-                      <span className="text-black text-sm font-medium">{st.name}</span>
-                      <span className="text-xs text-slate-500 font-normal">
+                      <span className="text-black text-sm font-bold">{st.name}</span>
+                      <span className="text-xs text-slate-600 font-medium">
                         {getCategoryName(st.id)}
                       </span>
                     </div>

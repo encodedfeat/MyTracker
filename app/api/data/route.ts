@@ -4,6 +4,7 @@ import Goal from '@/models/Goal';
 import Subtopic from '@/models/Subtopic';
 import Task from '@/models/Task';
 import Log from '@/models/Log';
+import DailyPlan from '@/models/DailyPlan';
 import { auth } from "@/auth";
 
 export async function GET(request: Request) {
@@ -60,6 +61,17 @@ export async function GET(request: Request) {
 
         const logs = await Log.find(logFilter).lean();
 
+        let dailyPlanFilter: any = { userId };
+        if (month && year) {
+            const m = parseInt(month);
+            const y = parseInt(year);
+            const mStr = m.toString().padStart(2, '0');
+            const startPrefix = `${y}-${mStr}-`;
+            // Simple regex to match dates starting with YYYY-MM
+            dailyPlanFilter.date = new RegExp(`^${startPrefix}`);
+        }
+        const dailyPlans = await DailyPlan.find(dailyPlanFilter).lean();
+
         // Helper to convert _id to string and handle dates
         const serialize = (doc: any) => {
             const { _id, ...rest } = doc;
@@ -67,7 +79,7 @@ export async function GET(request: Request) {
                 id: _id.toString(),
                 ...rest,
                 // Convert dates to YYYY-MM-DD string
-                ...(rest.date && { date: rest.date.toISOString().split('T')[0] }),
+                ...(rest.date && typeof rest.date === 'object' && { date: rest.date.toISOString().split('T')[0] }),
                 ...(rest.createdAt && { createdAt: rest.createdAt.toISOString() }),
                 ...(rest.updatedAt && { updatedAt: rest.updatedAt.toISOString() }),
                 // Handle nested ObjectIds if any (e.g. goalId, subtopicId)
@@ -81,6 +93,7 @@ export async function GET(request: Request) {
             subtopics: subtopics.map(serialize),
             tasks: tasks.map(serialize),
             logs: logs.map(serialize),
+            dailyPlans: dailyPlans.map(serialize),
         });
     } catch (error) {
         console.error('Error fetching data:', error);

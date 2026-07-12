@@ -18,7 +18,7 @@ export default function AuthenticatedLayout({
 
                 <div className="relative z-10 flex flex-col min-h-screen">
                     <AppHeader />
-                    <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+                    <main className="flex-1 w-full flex flex-col">
                         {children}
                     </main>
                     <footer className="text-center p-4 text-slate-700 font-bold text-sm">

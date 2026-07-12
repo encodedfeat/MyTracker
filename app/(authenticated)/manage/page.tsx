@@ -5,11 +5,12 @@ import { useGoalTracker } from '@/context/GoalContext';
 import { ManageGoals } from '@/components/manage/ManageGoals';
 import { ManageSubtopics } from '@/components/manage/ManageSubtopics';
 import { ManageTasks } from '@/components/manage/ManageTasks';
+import { ManageDailyPlan } from '@/components/manage/ManageDailyPlan';
 import { LogProgressView } from '@/components/log/LogProgressView';
 import { HabitMonthlyReportView } from '@/components/dashboard/HabitMonthlyReportView';
 import { RecentLogsView } from '@/components/log/RecentLogsView';
 
-type TabType = 'categories' | 'subtopics' | 'habits' | 'tasks' | 'log' | 'recentLogs';
+type TabType = 'dailyPlan' | 'categories' | 'subtopics' | 'habits' | 'tasks' | 'log' | 'recentLogs';
 
 export default function ManagePage() {
     const [activeTab, setActiveTab] = useState<TabType>('categories');
@@ -34,7 +35,12 @@ export default function ManagePage() {
         isReadOnly,
         logHabit,
         subtopicProgress,
-        isFuture
+        isFuture,
+        dailyPlans,
+        selectedDailyDate,
+        changeDailyDate,
+        saveDailyPlan,
+        toggleAdHocTask
     } = useGoalTracker();
 
     // Filter task-type subtopics
@@ -46,6 +52,7 @@ export default function ManagePage() {
         { id: 'tasks' as TabType, label: 'Tasks' },
         { id: 'habits' as TabType, label: 'Habits' },
         { id: 'log' as TabType, label: 'Cumulative' },
+        { id: 'dailyPlan' as TabType, label: 'Daily Plan' },
         { id: 'recentLogs' as TabType, label: 'Recent Logs' }
     ];
 
@@ -62,10 +69,10 @@ export default function ManagePage() {
                 }}
             />
 
-            <div className="relative z-10 p-6 max-w-[1800px] mx-auto">
+            <div className="relative z-10 px-4 md:px-8 py-6 max-w-7xl mx-auto">
                 {/* Tab Navigation */}
                 <div className="mb-8 border-b-2 border-black">
-                    <div className="flex space-x-1 overflow-x-auto pb-0 w-full">
+                    <div className="flex space-x-1 overflow-x-auto pb-0 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {tabs.map(tab => {
                             const isActive = activeTab === tab.id;
                             return (
@@ -89,6 +96,20 @@ export default function ManagePage() {
 
                 {/* Tab Content */}
                 <div className="space-y-8">
+                    {activeTab === 'dailyPlan' && (
+                        <ManageDailyPlan
+                            goals={goals}
+                            subtopics={subtopics}
+                            tasks={tasks}
+                            dailyPlans={dailyPlans}
+                            selectedDailyDate={selectedDailyDate}
+                            changeDailyDate={changeDailyDate}
+                            saveDailyPlan={saveDailyPlan}
+                            toggleAdHocTask={toggleAdHocTask}
+                            isReadOnly={isReadOnly}
+                        />
+                    )}
+
                     {activeTab === 'categories' && (
                         <ManageGoals
                             goals={goals}

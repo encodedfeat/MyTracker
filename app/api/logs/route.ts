@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Log from '@/models/Log';
 import { auth } from "@/auth";
+import { getLocalDateString } from '@/lib/dateUtils';
 
 export async function POST(request: Request) {
     try {
@@ -12,6 +13,14 @@ export async function POST(request: Request) {
 
         await dbConnect();
         const body = await request.json();
+
+        if (body.date) {
+            const today = getLocalDateString(new Date());
+            if (body.date !== today) {
+                return NextResponse.json({ error: 'Cannot log progress for past or future dates. Only today is allowed.' }, { status: 400 });
+            }
+        }
+
         const log = await Log.create({ ...body, userId: session.user.id });
 
         // Serialize manually to ensure date format matches

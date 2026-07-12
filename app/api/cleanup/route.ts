@@ -6,9 +6,14 @@ import Subtopic from '@/models/Subtopic';
 import Task from '@/models/Task';
 import Log from '@/models/Log';
 import User from '@/models/User';
+import { auth } from "@/auth";
 
 export async function POST(req: NextRequest) {
     try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         await dbConnect();
 
         // Delete all data from collections

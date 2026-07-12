@@ -14,7 +14,10 @@ export default function DashboardView() {
         changeMonth,
         goals,
         tasks,
-        dailyLogs
+        dailyLogs,
+        dailyPlans,
+        selectedDailyDate,
+        changeDailyDate
     } = useGoalTracker();
 
     // Determine if there is any data for the current month
@@ -40,6 +43,10 @@ export default function DashboardView() {
             hasData={hasData}
             goals={goals}
             tasks={tasks}
+            dailyLogs={dailyLogs}
+            dailyPlans={dailyPlans}
+            selectedDailyDate={selectedDailyDate}
+            changeDailyDate={changeDailyDate}
         />
     );
 }

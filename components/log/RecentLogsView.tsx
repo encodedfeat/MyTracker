@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { HelpCircle } from 'lucide-react';
 
 interface Subtopic {
     id: string;
@@ -78,7 +79,15 @@ export function RecentLogsView({ subtopics, dailyLogs = [] }: RecentLogsViewProp
             className="relative overflow-hidden p-6 rounded-lg border border-black flex flex-col h-[calc(100vh-250px)] min-h-[500px] bg-white"
         >
             <h3 className="text-2xl font-black uppercase tracking-tight text-black mb-6 flex items-center justify-between">
-                <span>Recent Logs (This Month)</span>
+                <span className="flex items-center gap-2">
+                    Recent Logs (This Month)
+                    <div className="relative group cursor-help outline-none flex items-center" tabIndex={0}>
+                        <HelpCircle size={20} className="text-slate-400 group-hover:text-black transition-colors" />
+                        <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-2 w-64 md:w-72 p-3 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-20 shadow-[4px_4px_0_0_#000] border-2 border-white font-medium normal-case text-center md:text-left">
+                            A quick log of all your recorded tasks, habits, and progress for the current month.
+                        </div>
+                    </div>
+                </span>
                 <span className="text-sm font-bold text-slate-500">
                     Total: {sortedLogs.length}
                 </span>

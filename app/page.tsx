@@ -16,7 +16,7 @@ export default function LandingPage() {
 
     React.useEffect(() => {
         if (session) {
-            router.push('/dashboard');
+            router.push('/home');
         }
     }, [session, router]);
     const containerVariants: Variants = {
@@ -72,7 +72,7 @@ export default function LandingPage() {
 
                     <motion.div variants={itemVariants} className="flex justify-center mb-20">
                         <button
-                            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                            onClick={() => signIn('google', { callbackUrl: '/home' })}
                             className="button-89 text-2xl"
                             style={{ '--color': '#000000', color: 'white', backgroundColor: 'black' } as React.CSSProperties}
                         >
