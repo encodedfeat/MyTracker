@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Check, Trash2, Pencil, X, Lock, HelpCircle } from 'lucide-react';
+import { BrutalistSelect } from '@/components/ui/BrutalistSelect';
 
 // Define the types this component needs
 interface Subtopic {
@@ -187,10 +188,10 @@ export function ManageTasks({
           <div className="flex flex-wrap items-center justify-center mb-10 gap-3">
             <h2 className="text-3xl font-bold text-black tracking-tight">Manage Task Content</h2>
             <div className="relative group cursor-help outline-none flex items-center" tabIndex={0}>
-                <HelpCircle size={24} className="text-slate-400 group-hover:text-black transition-colors" />
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 md:w-72 p-3 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-20 shadow-[4px_4px_0_0_#000] border-2 border-white font-medium text-center">
-                    Add and manage individual tasks under your specific task lists.
-                </div>
+              <HelpCircle size={24} className="text-slate-400 group-hover:text-black transition-colors" />
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 md:w-72 p-3 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-20 shadow-[4px_4px_0_0_#000] border-2 border-white font-medium text-center">
+                Add and manage individual tasks under your specific task lists.
+              </div>
             </div>
             {isReadOnly && (
               <span className="ml-4 bg-amber-500/20 text-amber-500 text-xs font-bold px-2 py-1 rounded border border-amber-500/50">
@@ -203,17 +204,15 @@ export function ManageTasks({
             {/* Category Selection Dropdown */}
             <h3 className="text-lg font-bold text-black mb-2">Select Category</h3>
             <div className="max-w-xs">
-              <select
+              <BrutalistSelect
                 value={selectedGoalId}
-                onChange={(e) => setSelectedGoalId(e.target.value)}
-                className="select-55"
-              >
-                {goals.map(goal => (
-                  <option key={goal.id} value={goal.id}>
-                    {goal.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setSelectedGoalId(value)}
+                options={goals.map(goal => ({
+                  value: goal.id,
+                  label: goal.name
+                }))}
+                placeholder="-- Select Category --"
+              />
             </div>
 
             {/* Task List for Selected Category */}

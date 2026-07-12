@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { Trash2, Edit2, Check, X, Plus, Layers, Activity, ListTodo, HelpCircle } from 'lucide-react';
 import { GoalIcon } from '@/components/ui/GoalIcon';
+import { BrutalistSelect } from '@/components/ui/BrutalistSelect';
 
 interface Goal {
     id: string;
@@ -155,19 +156,15 @@ export function ManageSubtopics({ goals, subtopics, onAddSubtopic, onUpdateSubto
                                     <label htmlFor="goalSelect" className="block text-sm font-medium text-slate-700 ml-1">
                                         Select Category
                                     </label>
-                                    <select
-                                        id="goalSelect"
+                                    <BrutalistSelect
                                         value={goalId}
-                                        onChange={(e) => setGoalId(e.target.value)}
-                                        className="select-55"
-                                    >
-                                        <option value="" className="bg-white text-black">-- Select Category --</option>
-                                        {goals.map(goal => (
-                                            <option key={goal.id} value={goal.id} className="bg-white text-black hover:bg-slate-50">
-                                                {goal.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        onChange={(value) => setGoalId(value)}
+                                        options={goals.map(goal => ({
+                                            value: goal.id,
+                                            label: goal.name
+                                        }))}
+                                        placeholder="-- Select Category --"
+                                    />
                                 </div>
 
                                 {/* Subtopic Name */}

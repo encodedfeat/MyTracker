@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BrutalistSelect } from '@/components/ui/BrutalistSelect';
 import { getLocalDateString } from '@/lib/dateUtils';
 import { HelpCircle } from 'lucide-react';
 
@@ -283,22 +284,20 @@ export function LogProgressView({
                                             <label className="block text-sm font-medium text-slate-700 ml-1">
                                                 Select Subtopic
                                             </label>
-                                            <select
+                                            <BrutalistSelect
                                                 value={subtopicId}
-                                                onChange={(e) => setSubtopicId(e.target.value)}
-                                                className="select-55"
-                                                disabled={isReadOnly}
-                                            >
-                                                <option value="">-- Choose a subtopic --</option>
-                                                {cumulativeSubtopics.map(st => {
+                                                onChange={(value) => setSubtopicId(value)}
+                                                options={cumulativeSubtopics.map(st => {
                                                     const goal = goals.find(g => g.id === st.goalId);
-                                                    return (
-                                                        <option key={st.id} value={st.id}>
-                                                            {st.name} . {goal?.name || 'Unknown'}
-                                                        </option>
-                                                    );
+                                                    return {
+                                                        value: st.id,
+                                                        label: st.name,
+                                                        subLabel: goal?.name || 'Unknown'
+                                                    };
                                                 })}
-                                            </select>
+                                                placeholder="-- Choose a subtopic --"
+                                                disabled={isReadOnly}
+                                            />
                                         </div>
 
                                         <div className="space-y-2">

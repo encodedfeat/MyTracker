@@ -8,6 +8,7 @@ import {
   Cell,
   ResponsiveContainer
 } from 'recharts';
+import { BrutalistSelect } from '@/components/ui/BrutalistSelect';
 
 interface MonthlyProgressCardProps {
   percent: number;
@@ -34,19 +35,14 @@ export function MonthlyProgressCard({
     <div className="h-full flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
         <h2 className="text-xl font-semibold text-black">This Month's Progress</h2>
-        <select
-          value={selectedCategoryId}
-          onChange={(e) => onCategoryChange?.(e.target.value)}
-          className="select-55 min-w-[150px] !h-10 !py-1 !text-sm"
-        >
-          <option value="">--select category--</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))
-          }
-        </select >
+        <div className="w-full sm:w-auto min-w-[150px]">
+          <BrutalistSelect
+            value={selectedCategoryId}
+            onChange={(value) => onCategoryChange?.(value)}
+            options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
+            placeholder="--select category--"
+          />
+        </div>
       </div >
       <div className="relative" style={{ width: '100%', height: '240px' }}>
         <ResponsiveContainer width="100%" height={240}>

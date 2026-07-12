@@ -140,7 +140,7 @@ export function AppHeader() {
 
                             {/* Dropdown Menu */}
                             {isProfileOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden z-50">
+                                <div className="absolute right-0 top-full mt-2 w-48 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden z-50">
                                     <div className="px-4 py-3 border-b-2 border-slate-100">
                                         <p className="text-sm font-bold text-black truncate">{session?.user?.name || 'User'}</p>
                                         <p className="text-xs text-slate-500 truncate">{session?.user?.email}</p>

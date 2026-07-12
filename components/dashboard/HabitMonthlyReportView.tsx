@@ -115,15 +115,7 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
     // Compact view for Dashboard (checkbox-based, grouped by category)
     if (isCompact) {
         return (
-            <div
-                className="w-full relative overflow-hidden rounded-lg border border-slate-300/50 shadow-lg mb-8"
-                style={{
-                    backgroundColor: '#ffffff',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                }}
-            >
+            <div className="w-full relative overflow-hidden bg-white rounded-xl border-2 border-black mb-8">
                 <div className="absolute inset-0  pointer-events-none" />
                 <div className="relative z-10">
                     <div className="p-4 border-b border-slate-300/50">

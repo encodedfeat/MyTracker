@@ -161,7 +161,7 @@ export function ModernDashboardView({
     return (
       <div className="space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8">
         {renderHeader()}
-        <div className="text-center p-20 rounded-lg border border-black bg-white/50">
+        <div className="text-center p-20 bg-white rounded-xl border-2 border-black">
           <h2 className="text-2xl font-semibold text-slate-800">Wait for {monthYear}</h2>
           <p className="text-slate-500 mt-2">You can't track goals for the future yet.</p>
         </div>
@@ -173,7 +173,7 @@ export function ModernDashboardView({
     return (
       <div className="space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8">
         {renderHeader()}
-        <div className="text-center p-20 rounded-lg border border-black bg-white/50">
+        <div className="text-center p-20 bg-white rounded-xl border-2 border-black">
           <h2 className="text-2xl font-semibold text-slate-800">No record found</h2>
           <p className="text-slate-500 mt-2">No activity was recorded for this month.</p>
         </div>
@@ -185,15 +185,7 @@ export function ModernDashboardView({
     return (
       <div className="space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8">
         {renderHeader()}
-        <div
-          className="relative overflow-hidden rounded-3xl border border-slate-300/50 shadow-2xl p-10 text-center animate-fadeIn"
-          style={{
-            backgroundColor: '#ffffff',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        >
+        <div className="bg-white rounded-xl border-2 border-black p-10 text-center animate-fadeIn relative overflow-hidden">
           {/* Overlay */}
           <div className="absolute inset-0  pointer-events-none" />
 
@@ -214,21 +206,13 @@ export function ModernDashboardView({
   }
 
   return (
-    <div
-      className="min-h-screen w-full relative"
-      style={{
-        backgroundColor: '#ffffff',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="w-full relative">
       {/* Overlay to ensure text readability */}
       <div className="absolute inset-0  pointer-events-none" />
 
-      <div className="relative z-10 space-y-4 xl:space-y-6 animate-fadeIn max-w-7xl mx-auto px-4 md:px-8 pb-12 pt-6">
-        {renderHeader()}
+      <div className="relative z-10 animate-fadeIn max-w-7xl mx-auto px-2 md:px-8 pb-12 pt-6">
+        <div className="bg-white rounded-3xl border border-slate-300/50 shadow-2xl p-4 md:p-10 space-y-4 xl:space-y-6">
+          {renderHeader()}
         
         {/* Daily Focus Card */}
         <div className="mb-4 xl:mb-6">
@@ -245,15 +229,7 @@ export function ModernDashboardView({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6 mb-4 xl:mb-6">
           <div className="h-full">
-            <div
-              className="h-full rounded-lg border border-slate-300/50 p-4 overflow-hidden relative"
-              style={{
-                backgroundColor: '#ffffff',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              }}
-            >
+            <div className="h-full bg-white rounded-xl border-2 border-black p-4 overflow-hidden relative">
               <div className="absolute inset-0  pointer-events-none" />
               <div className="relative z-10 h-full">
                 <MonthlyProgressCard
@@ -296,6 +272,7 @@ export function ModernDashboardView({
                 categoryName={goals.find(g => g.id === subtopic.goalId)?.name || 'Unknown'}
               />
             ))}
+        </div>
         </div>
       </div>
     </div>

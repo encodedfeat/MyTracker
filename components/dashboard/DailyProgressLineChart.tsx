@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
-import { ChevronDown } from 'lucide-react';
+import { BrutalistSelect, BrutalistSelectOption } from '@/components/ui/BrutalistSelect';
 
 interface SubtopicMeta {
   id: string;
@@ -55,21 +55,7 @@ export function DailyProgressLineChart({
 }: DailyProgressLineChartProps) {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-  const [isSubtopicDropdownOpen, setIsSubtopicDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsSubtopicDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
 
   const selectedSubtopic = selectedSubtopicId
     ? subtopicMeta?.find(s => s.id === selectedSubtopicId)
@@ -150,94 +136,45 @@ export function DailyProgressLineChart({
     : "Today's Total";
 
   return (
-    <div
-      className="h-full flex flex-col rounded-lg border border-slate-300/50 p-4 overflow-hidden relative"
-      style={{
-        backgroundColor: '#ffffff',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
+    <div className="h-full flex flex-col bg-white rounded-xl border-2 border-black p-4 overflow-hidden relative">
       <div className="absolute inset-0  pointer-events-none" />
       <div className="relative z-10 flex flex-col h-full">
         <div className="grid grid-cols-2 sm:flex sm:flex-row items-center gap-2 sm:gap-3 mb-6 w-full">
 
           {/* Category Dropdown */}
-          <div className="relative w-full sm:w-auto">
-            <select
+          <div className="w-full sm:w-auto min-w-[150px] sm:min-w-[180px]">
+            <BrutalistSelect
               value={selectedCategoryId}
-              onChange={(e) => {
-                setSelectedCategoryId(e.target.value);
+              onChange={(value) => {
+                setSelectedCategoryId(value);
                 // Reset subtopic selection if it doesn't belong to the new category
                 if (selectedSubtopicId) {
                   const st = subtopics.find(s => s.id === selectedSubtopicId);
-                  if (st && st.goalId !== e.target.value && e.target.value !== '') {
+                  if (st && st.goalId !== value && value !== '') {
                     onSubtopicChange('');
                   }
                 }
               }}
-              className="select-55 !h-10 !py-1 !text-sm min-w-[150px] sm:min-w-[180px]"
-            >
-              <option value="" className="bg-white text-black font-medium">All Categories</option>
-              {relevantCategories.map(goal => (
-                <option key={goal.id} value={goal.id} className="bg-white text-black font-medium">
-                  {goal.name}
-                </option>
-              ))}
-            </select>
+              options={relevantCategories.map(goal => ({
+                value: goal.id,
+                label: goal.name
+              }))}
+              placeholder="All Categories"
+            />
           </div>
 
           {/* Custom Subtopic Dropdown */}
-          <div className="relative w-full sm:w-auto" ref={dropdownRef}>
-            <button
-              onClick={() => setIsSubtopicDropdownOpen(!isSubtopicDropdownOpen)}
-              className="select-55 !flex !items-center !justify-between !h-10 !py-1 !text-sm !font-bold min-w-[150px] sm:min-w-[180px] !pr-3"
-              style={{ backgroundImage: 'none' }}
-            >
-              <span className="truncate">
-                {selectedSubtopic ? selectedSubtopic.name : "Select subtopic..."}
-              </span>
-              <ChevronDown className="w-4 h-4 text-black flex-shrink-0" />
-            </button>
-
-            {isSubtopicDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-[280px] max-h-[300px] overflow-y-auto bg-white border-2 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] z-50 custom-scrollbar">
-                <div
-                  onClick={() => {
-                    onSubtopicChange('');
-                    setIsSubtopicDropdownOpen(false);
-                  }}
-                  className={`px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors ${!selectedSubtopicId ? 'bg-slate-100' : ''}`}
-                >
-                  <span className="text-black text-sm font-bold">None</span>
-                </div>
-
-                {filteredSubtopics?.map(st => (
-                  <div
-                    key={st.id}
-                    onClick={() => {
-                      onSubtopicChange(st.id);
-                      setIsSubtopicDropdownOpen(false);
-                    }}
-                    className={`px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors border-t border-slate-200 ${selectedSubtopicId === st.id ? 'bg-slate-100' : ''}`}
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-black text-sm font-bold">{st.name}</span>
-                      <span className="text-xs text-slate-600 font-medium">
-                        {getCategoryName(st.id)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-                {filteredSubtopics?.length === 0 && (
-                  <div className="px-4 py-3 text-slate-500 text-sm italic text-center">
-                    No subtopics found
-                  </div>
-                )}
-              </div>
-            )}
+          <div className="w-full sm:w-auto min-w-[150px] sm:min-w-[180px]">
+            <BrutalistSelect
+              value={selectedSubtopicId || ''}
+              onChange={(value) => onSubtopicChange(value)}
+              options={filteredSubtopics?.map(st => ({
+                value: st.id,
+                label: st.name,
+                subLabel: getCategoryName(st.id)
+              })) || []}
+              placeholder="Select subtopic..."
+            />
           </div>
         </div>
 
