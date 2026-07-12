@@ -36,6 +36,7 @@ interface DailyPlan {
     taskIds: string[];
     subtopicIds: string[];
     adHocTasks: IAdHocTask[];
+    cumulativeTargets?: { subtopicId: string; target: number }[];
 }
 
 interface ManageDailyPlanProps {
@@ -43,9 +44,10 @@ interface ManageDailyPlanProps {
     subtopics: Subtopic[];
     tasks: Task[];
     dailyPlans: DailyPlan[];
+    dailyLogs?: { subtopicId: string; date: string; value: number }[];
     selectedDailyDate: Date;
     changeDailyDate: (offset: number) => void;
-    saveDailyPlan: (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[]) => Promise<void>;
+    saveDailyPlan: (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[], cumulativeTargets: { subtopicId: string; target: number }[]) => Promise<void>;
     toggleAdHocTask: (dateString: string, taskId: string, currentStatus: boolean) => Promise<void>;
     isReadOnly: boolean;
 }
@@ -55,6 +57,7 @@ export function ManageDailyPlan({
     subtopics,
     tasks,
     dailyPlans,
+    dailyLogs = [],
     selectedDailyDate,
     changeDailyDate,
     saveDailyPlan,
@@ -71,6 +74,7 @@ export function ManageDailyPlan({
     const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
     const [selectedSubtopicIds, setSelectedSubtopicIds] = useState<string[]>([]);
     const [adHocTasks, setAdHocTasks] = useState<IAdHocTask[]>([]);
+    const [cumulativeTargets, setCumulativeTargets] = useState<{subtopicId: string, target: number}[]>([]);
     
     const [isSaving, setIsSaving] = useState(false);
     const [isEditMode, setIsEditMode] = useState(true);
@@ -91,18 +95,20 @@ export function ManageDailyPlan({
             setSelectedTaskIds(planForDate.taskIds || []);
             setSelectedSubtopicIds(planForDate.subtopicIds || []);
             setAdHocTasks(planForDate.adHocTasks || []);
+            setCumulativeTargets(planForDate.cumulativeTargets || []);
             setIsEditMode(false); // Default to clean view if plan exists
         } else {
             setSelectedTaskIds([]);
             setSelectedSubtopicIds([]);
             setAdHocTasks([]);
+            setCumulativeTargets([]);
             setIsEditMode(true); // Default to edit view if no plan
         }
     }, [planForDate, dateString]);
 
     const handleSave = async () => {
         setIsSaving(true);
-        await saveDailyPlan(dateString, selectedTaskIds, selectedSubtopicIds, adHocTasks);
+        await saveDailyPlan(dateString, selectedTaskIds, selectedSubtopicIds, adHocTasks, cumulativeTargets);
         setIsSaving(false);
         setIsEditMode(false); // Switch to clean view after saving
     };
@@ -112,10 +118,12 @@ export function ManageDailyPlan({
             setSelectedTaskIds(planForDate.taskIds || []);
             setSelectedSubtopicIds(planForDate.subtopicIds || []);
             setAdHocTasks(planForDate.adHocTasks || []);
+            setCumulativeTargets(planForDate.cumulativeTargets || []);
         } else {
             setSelectedTaskIds([]);
             setSelectedSubtopicIds([]);
             setAdHocTasks([]);
+            setCumulativeTargets([]);
         }
         setIsEditMode(false);
     };
@@ -130,6 +138,22 @@ export function ManageDailyPlan({
         setSelectedSubtopicIds(prev =>
             prev.includes(subtopicId) ? prev.filter(id => id !== subtopicId) : [...prev, subtopicId]
         );
+    };
+
+    const handleTargetChange = (subtopicId: string, value: string) => {
+        const target = parseInt(value, 10);
+        if (isNaN(target) || target < 0) return;
+        
+        setCumulativeTargets(prev => {
+            const existing = prev.findIndex(t => t.subtopicId === subtopicId);
+            if (existing >= 0) {
+                const next = [...prev];
+                next[existing] = { subtopicId, target };
+                return next;
+            } else {
+                return [...prev, { subtopicId, target }];
+            }
+        });
     };
 
     const handleAddAdHocTask = (e: React.FormEvent) => {
@@ -305,29 +329,56 @@ export function ManageDailyPlan({
                                     </td>
                                     <td className="p-4 align-top">
                                         <div className="space-y-3">
-                                            {row.goalSubtopics.map(st => (
-                                                <label key={st.id} className={`flex items-start space-x-3 group ${effectiveIsEditMode && !isReadOnly ? 'cursor-pointer' : ''}`}>
-                                                    {effectiveIsEditMode ? (
-                                                        <div className="relative flex flex-shrink-0 items-center justify-center mt-1">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={selectedSubtopicIds.includes(st.id)}
-                                                                onChange={() => toggleSubtopic(st.id)}
-                                                                disabled={isReadOnly}
-                                                                className="peer appearance-none w-5 h-5 border-2 border-black rounded-sm checked:bg-black transition-colors cursor-pointer disabled:opacity-50"
+                                            {row.goalSubtopics.map(st => {
+                                                const isSelected = selectedSubtopicIds.includes(st.id);
+                                                const targetObj = cumulativeTargets.find(t => t.subtopicId === st.id);
+                                                const progressForToday = dailyLogs.filter(log => log.subtopicId === st.id && log.date === dateString).reduce((sum, log) => sum + log.value, 0);
+                                                const isCompleted = targetObj && targetObj.target > 0 && progressForToday >= targetObj.target;
+                                                
+                                                return (
+                                                <div key={st.id} className="flex flex-col gap-2">
+                                                    <label className={`flex items-start space-x-3 group ${effectiveIsEditMode && !isReadOnly ? 'cursor-pointer' : ''}`}>
+                                                        {effectiveIsEditMode ? (
+                                                            <div className="relative flex flex-shrink-0 items-center justify-center mt-1">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isSelected}
+                                                                    onChange={() => toggleSubtopic(st.id)}
+                                                                    disabled={isReadOnly}
+                                                                    className="peer appearance-none w-5 h-5 border-2 border-black rounded-sm checked:bg-black transition-colors cursor-pointer disabled:opacity-50"
+                                                                />
+                                                                <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none text-xs">
+                                                                    ✓
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex-shrink-0 w-2 h-2 rounded-full bg-black mt-2 self-start"></div>
+                                                        )}
+                                                        <span className={`text-base font-medium transition-colors ${effectiveIsEditMode ? 'group-hover:text-blue-600' : ''} ${isCompleted && !effectiveIsEditMode ? 'line-through text-slate-400' : 'text-black'}`}>
+                                                            {st.name} <span className="text-xs text-slate-400 ml-2 font-normal">(Cumulative)</span>
+                                                        </span>
+                                                    </label>
+                                                    {isSelected && effectiveIsEditMode && !isReadOnly && (
+                                                        <div className="ml-8 flex items-center gap-2">
+                                                            <span className="text-sm font-medium text-slate-600">Daily Target:</span>
+                                                            <input 
+                                                                type="number" 
+                                                                min="0"
+                                                                value={targetObj?.target || ''}
+                                                                onChange={(e) => handleTargetChange(st.id, e.target.value)}
+                                                                className="w-24 border-2 border-black rounded px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-black focus:ring-opacity-50"
+                                                                placeholder="e.g. 10"
                                                             />
-                                                            <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none text-xs">
-                                                                ✓
-                                                            </span>
                                                         </div>
-                                                    ) : (
-                                                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-black mt-2 self-start"></div>
                                                     )}
-                                                    <span className={`text-base font-medium text-black ${effectiveIsEditMode ? 'group-hover:text-blue-600' : ''} transition-colors`}>
-                                                        {st.name} <span className="text-xs text-slate-400 ml-2 font-normal">(Cumulative)</span>
-                                                    </span>
-                                                </label>
-                                            ))}
+                                                    {isSelected && !effectiveIsEditMode && targetObj && targetObj.target > 0 && (
+                                                        <div className="ml-5 text-sm font-bold text-slate-500">
+                                                            Target: {targetObj.target}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                );
+                                            })}
                                         </div>
                                     </td>
                                 </tr>

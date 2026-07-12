@@ -14,6 +14,7 @@ interface Subtopic {
     goalId: string;
     name: string;
     type: 'habit' | 'cumulative' | 'tasks';
+    target?: number;
 }
 
 interface Task {
@@ -37,6 +38,7 @@ interface DailyPlan {
     taskIds: string[];
     subtopicIds: string[];
     adHocTasks?: IAdHocTask[];
+    cumulativeTargets?: { subtopicId: string; target: number }[];
 }
 
 interface Log {
@@ -84,7 +86,7 @@ export function DailyFocusCard({
     // Determine if selected date is today
     const isToday = getLocalDateString(selectedDailyDate) === getLocalDateString(new Date());
 
-    const { taskIds = [], subtopicIds = [], adHocTasks = [] } = planForToday || {};
+    const { taskIds = [], subtopicIds = [], adHocTasks = [], cumulativeTargets = [] } = planForToday || {};
 
     // Get planned tasks
     const plannedTasks = taskIds.map(id => tasks.find(t => t.id === id)).filter(Boolean) as Task[];
@@ -113,6 +115,7 @@ export function DailyFocusCard({
         );
         
         const extraSubtopics = subtopics.filter(st => {
+            if (st.type === 'tasks') return false;
             if (!loggedSubtopicIds.has(st.id)) return false;
             if (plannedSubtopics.find(ps => ps.id === st.id)) return false;
             return true; 
@@ -229,27 +232,61 @@ export function DailyFocusCard({
                                         <div className="space-y-3">
                                             {row.goalSubtopics.map(subtopic => {
                                                 const logToday = dailyLogs.find(l => l.subtopicId === subtopic.id && l.date === todayString);
+                                                const loggedValue = logToday ? logToday.value : 0;
                                                 const hasProgress = !!logToday;
+                                                const targetObj = cumulativeTargets.find(t => t.subtopicId === subtopic.id);
+                                                
+                                                let isCompleted = false;
+                                                let progressText = "";
+                                                
+                                                if (subtopic.type === 'cumulative') {
+                                                    const monthlyTarget = subtopic.target || 0;
+                                                    
+                                                    // Determine completion based on daily target if set
+                                                    if (targetObj && targetObj.target > 0) {
+                                                        isCompleted = loggedValue >= targetObj.target;
+                                                    }
+                                                    
+                                                    if (viewMode === 'planned') {
+                                                        if (targetObj && targetObj.target > 0) {
+                                                            progressText = `${loggedValue} / ${targetObj.target}`;
+                                                        } else {
+                                                            progressText = `+${loggedValue}`;
+                                                        }
+                                                    } else {
+                                                        // Overall view mode
+                                                        if (monthlyTarget > 0) {
+                                                            progressText = `${loggedValue} / ${monthlyTarget}`;
+                                                        } else if (targetObj && targetObj.target > 0) {
+                                                            progressText = `${loggedValue} / ${targetObj.target}`;
+                                                        } else {
+                                                            progressText = `+${loggedValue}`;
+                                                        }
+                                                    }
+                                                } else if (subtopic.type === 'habit') {
+                                                    isCompleted = hasProgress;
+                                                }
+                                                
                                                 return (
                                                     <div key={subtopic.id} className="flex items-start gap-2">
                                                         <div className="mt-1">
-                                                            {hasProgress ? (
+                                                            {isCompleted ? (
                                                                 <CheckCircle size={18} className="text-black flex-shrink-0" />
                                                             ) : (
                                                                 <Circle size={18} className="text-slate-300 flex-shrink-0" />
                                                             )}
                                                         </div>
                                                         <div>
-                                                            <span className={`text-base font-medium ${hasProgress ? 'text-slate-500' : 'text-black'}`}>
+                                                            <span className={`text-base font-medium ${isCompleted ? 'line-through text-slate-400' : (hasProgress ? 'text-slate-500' : 'text-black')}`}>
                                                                 {subtopic.name} <span className="text-xs text-slate-400 ml-1 font-normal">({subtopic.type === 'habit' ? 'Habit' : 'Cumulative'})</span>
                                                             </span>
                                                             {hasProgress && subtopic.type === 'cumulative' && (
-                                                                <div className="text-xs font-bold text-black mt-1">
-                                                                    Progress Logged (+{logToday.value})
+                                                                <div className={`text-xs font-bold mt-1 ${isCompleted ? 'text-slate-400 line-through' : 'text-black'}`}>
+                                                                    Progress Logged ({progressText})
                                                                 </div>
                                                             )}
                                                             {hasProgress && subtopic.type === 'habit' && (
-                                                                <div className="text-xs font-bold text-black mt-1">
+                                                                <div className={`text-xs font-bold mt-1 ${isCompleted ? 'text-slate-400 line-through' : 'text-black'}`}>
                                                                     Completed Today
                                                                 </div>
                                                             )}

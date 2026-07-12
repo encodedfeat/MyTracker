@@ -67,6 +67,7 @@ interface DailyPlan {
   taskIds: string[];
   subtopicIds: string[];
   adHocTasks: IAdHocTask[];
+  cumulativeTargets?: { subtopicId: string, target: number }[];
 }
 
 interface GoalContextType {
@@ -106,7 +107,7 @@ interface GoalContextType {
   logHabit: (subtopicId: string, dateString: string) => Promise<void>;
   addLog: (log: Omit<Log, 'id'>) => Promise<void>;
   deleteLog: (logId: string) => Promise<void>;
-  saveDailyPlan: (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[]) => Promise<void>;
+  saveDailyPlan: (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[], cumulativeTargets: { subtopicId: string, target: number }[]) => Promise<void>;
   toggleAdHocTask: (dateString: string, taskId: string, currentStatus: boolean) => Promise<void>;
 }
 
@@ -508,12 +509,12 @@ export function GoalProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const saveDailyPlan = async (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[]) => {
+  const saveDailyPlan = async (dateString: string, taskIds: string[], subtopicIds: string[], adHocTasks: IAdHocTask[], cumulativeTargets: { subtopicId: string, target: number }[]) => {
     try {
       const response = await fetch('/api/daily-plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: dateString, taskIds, subtopicIds, adHocTasks })
+        body: JSON.stringify({ date: dateString, taskIds, subtopicIds, adHocTasks, cumulativeTargets })
       });
       if (!response.ok) throw new Error('Failed to save daily plan');
       const newPlan = await response.json();

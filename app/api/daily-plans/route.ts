@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
         await dbConnect();
 
-        const { date, taskIds, subtopicIds, adHocTasks } = await request.json();
+        const { date, taskIds, subtopicIds, adHocTasks, cumulativeTargets } = await request.json();
 
         if (!date) {
             return NextResponse.json({ error: 'Date is required' }, { status: 400 });
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
         // Use findOneAndUpdate with upsert to create or update the daily plan
         const dailyPlan = await DailyPlan.findOneAndUpdate(
             { userId, date },
-            { $set: { taskIds: taskIds || [], subtopicIds: subtopicIds || [], adHocTasks: adHocTasks || [] } },
+            { $set: { taskIds: taskIds || [], subtopicIds: subtopicIds || [], adHocTasks: adHocTasks || [], cumulativeTargets: cumulativeTargets || [] } },
             { new: true, upsert: true, setDefaultsOnInsert: true }
         );
 

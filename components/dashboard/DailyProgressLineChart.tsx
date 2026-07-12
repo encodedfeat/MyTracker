@@ -55,6 +55,13 @@ export function DailyProgressLineChart({
 }: DailyProgressLineChartProps) {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+    }
+  }, [data.length, selectedCategoryId, selectedSubtopicId]);
 
 
   const selectedSubtopic = selectedSubtopicId
@@ -177,46 +184,146 @@ export function DailyProgressLineChart({
             />
           </div>
         </div>
+        
+        <div className="mb-4 text-sm text-slate-500 italic max-w-2xl">
+          <span className="font-bold text-slate-600">Note:</span> This graph tracks your overall daily progress percentage for the month. You can use the dropdowns above to filter by a specific category or subtopic.
+        </div>
 
-        <div style={{ width: '100%', height: '320px' }}>
-          <ResponsiveContainer width="100%" height={320}>
-            <AreaChart
-              data={transformedData}
-              margin={{ top: 10, right: 40, left: 0, bottom: 5 }}
-            >
-              <defs>
-                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorSubtopic" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2F3336" vertical={false} />
-              <XAxis
-                dataKey="name"
-                stroke="#6B7280"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                interval={0} // Force show all ticks
-                tickFormatter={(value) => value.replace('Day ', '')}
-              />
+        <div className="flex w-full" style={{ height: '340px' }}>
+          {/* Sticky Left Y-Axis */}
+          <div style={{ width: '60px', flexShrink: 0, height: '320px', zIndex: 10, backgroundColor: 'white' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={transformedData} margin={{ top: 10, right: 0, left: 0, bottom: 20 }}>
+                <YAxis
+                  yAxisId="left"
+                  stroke="#3B82F6"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => value + '%'}
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  width={60}
+                  label={{ value: 'Progress (%)', angle: -90, position: 'insideLeft', offset: 10, fill: '#3B82F6', fontSize: 13, fontWeight: 'bold', style: { textAnchor: 'middle' } }}
+                />
+                <Area yAxisId="left" type="monotone" dataKey="percent" fill="transparent" stroke="transparent" isAnimationActive={false} activeDot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
 
-              <YAxis
-                yAxisId="left"
-                stroke="#3B82F6"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => value + '%'}
-                domain={[0, 100]}
-                width={40}
-              />
+          {/* Scrollable Chart Area */}
+          <div ref={scrollRef} className="overflow-x-auto overflow-y-hidden flex-1 chart-scrollbar" style={{ height: '340px' }}>
+            <div style={{ width: `${Math.max(100, (transformedData.length / 10) * 100)}%`, minWidth: '100%', height: '320px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={transformedData}
+                  margin={{ top: 10, right: 15, left: 15, bottom: 20 }}
+                >
+                  <defs>
+                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorSubtopic" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2F3336" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    stroke="#6B7280"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    interval={0}
+                    tickFormatter={(value) => value.replace('Day ', '')}
+                    height={30}
+                  />
 
-              {selectedSubtopic && (
+                  {/* Hidden Y-Axis to maintain horizontal alignment of Area with ticks */}
+                  <YAxis
+                    yAxisId="left"
+                    domain={[0, 100]}
+                    ticks={[0, 25, 50, 75, 100]}
+                    hide={true}
+                  />
+
+                  {selectedSubtopic && (
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      stroke="#10B981"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => value + '%'}
+                      domain={[0, 100]}
+                      ticks={[0, 25, 50, 75, 100]}
+                      width={40}
+                      hide={true}
+                    />
+                  )}
+
+                  <Tooltip
+                    cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '3 3' }}
+                    contentStyle={{
+                      backgroundColor: '#000000',
+                      border: '1px solid #2F3336',
+                      borderRadius: '6px',
+                      padding: '6px'
+                    }}
+                    labelStyle={{ color: '#9CA3AF', marginBottom: '2px', fontSize: '10px' }}
+                    itemStyle={{ color: '#E5E7EB', fontSize: '11px', fontWeight: '500' }}
+                    formatter={(value: any, name: string) => {
+                      if (name === totalLineName) {
+                        const dynamicName = selectedCategoryName 
+                          ? `${selectedCategoryName} Total`
+                          : `Total Progress`;
+                        return [Number(value).toFixed(1) + '%', dynamicName];
+                      }
+                      // Shorten subtopic name if it's too long
+                      const shortName = name.length > 20 ? name.substring(0, 20) + '...' : name;
+                      return [Number(value).toFixed(1) + '%', shortName];
+                    }}
+                    labelFormatter={(label) => 'Date: ' + label.replace('Day ', '')}
+                  />
+
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="percent"
+                    name={totalLineName}
+                    stroke="#3B82F6"
+                    fillOpacity={1}
+                    fill="url(#colorTotal)"
+                    strokeWidth={2.5}
+                    activeDot={{ r: 5, fill: '#3B82F6', stroke: '#15202B', strokeWidth: 2 }}
+                  />
+
+                  {selectedSubtopic && (
+                    <Area
+                      yAxisId="right"
+                      type="monotone"
+                      name={selectedSubtopic.name}
+                      dataKey={'subtopic_' + selectedSubtopic.id}
+                      stroke="#10B981"
+                      fillOpacity={1}
+                      fill="url(#colorSubtopic)"
+                      strokeWidth={2.5}
+                      activeDot={{ r: 5, fill: '#10B981', stroke: '#15202B', strokeWidth: 2 }}
+                    />
+                  )}
+                </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Sticky Right Y-Axis */}
+        {selectedSubtopic && (
+          <div style={{ width: '40px', flexShrink: 0, height: '320px', zIndex: 10, backgroundColor: 'white' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={transformedData} margin={{ top: 10, right: 0, left: 0, bottom: 20 }}>
                 <YAxis
                   yAxisId="right"
                   orientation="right"
@@ -226,60 +333,22 @@ export function DailyProgressLineChart({
                   axisLine={false}
                   tickFormatter={(value) => value + '%'}
                   domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
                   width={40}
                 />
-              )}
-
-              <Tooltip
-                cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '3 3' }}
-                contentStyle={{
-                  backgroundColor: '#000000',
-                  border: '1px solid #2F3336',
-                  borderRadius: '12px',
-                  padding: '12px'
-                }}
-                labelStyle={{ color: '#9CA3AF', marginBottom: '8px', fontSize: '13px' }}
-                itemStyle={{ color: '#E5E7EB', fontSize: '14px', fontWeight: '500' }}
-                formatter={(value: any, name: string) => {
-                  if (name === totalLineName) {
-                    return [value.toLocaleString(), name];
-                  }
-                  return [value + '%', name];
-                }}
-                labelFormatter={(label) => 'Day ' + label.replace('Day ', '')}
-              />
-
-              <Area
-                yAxisId="left"
-                type="monotone"
-                dataKey="percent"
-                name={totalLineName}
-                stroke="#3B82F6"
-                fillOpacity={1}
-                fill="url(#colorTotal)"
-                strokeWidth={2.5}
-                activeDot={{ r: 5, fill: '#3B82F6', stroke: '#15202B', strokeWidth: 2 }}
-              />
-
-              {selectedSubtopic && (
-                <Area
-                  yAxisId="right"
-                  type="monotone"
-                  name={selectedSubtopic.name}
-                  dataKey={'subtopic_' + selectedSubtopic.id}
-                  stroke="#10B981"
-                  fillOpacity={1}
-                  fill="url(#colorSubtopic)"
-                  strokeWidth={2.5}
-                  activeDot={{ r: 5, fill: '#10B981', stroke: '#15202B', strokeWidth: 2 }}
-                />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
+                <Area yAxisId="right" type="monotone" dataKey={'subtopic_' + selectedSubtopic.id} fill="transparent" stroke="transparent" isAnimationActive={false} activeDot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        </div>
+        
+        {/* Fixed Dates Label */}
+        <div className="text-center w-full mt-2 text-[#6B7280] text-[13px] font-bold pointer-events-none">
+          Dates
         </div>
       </div>
     </div>
-
   );
 }
 

@@ -45,6 +45,8 @@ interface DailyPlan {
   date: string;
   taskIds: string[];
   subtopicIds: string[];
+  adHocTasks?: any[];
+  cumulativeTargets?: { subtopicId: string; target: number }[];
 }
 
 interface Log {

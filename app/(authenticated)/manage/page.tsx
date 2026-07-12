@@ -99,9 +99,10 @@ export default function ManagePage() {
                     {activeTab === 'dailyPlan' && (
                         <ManageDailyPlan
                             goals={goals}
-                            subtopics={subtopics}
+                            subtopics={taskSubtopics.concat(subtopics.filter(st => st.type === 'cumulative'))}
                             tasks={tasks}
                             dailyPlans={dailyPlans}
+                            dailyLogs={dailyLogs}
                             selectedDailyDate={selectedDailyDate}
                             changeDailyDate={changeDailyDate}
                             saveDailyPlan={saveDailyPlan}

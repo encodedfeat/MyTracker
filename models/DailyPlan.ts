@@ -12,6 +12,7 @@ export interface IDailyPlan extends Document {
   taskIds: string[];
   subtopicIds: string[];
   adHocTasks: IAdHocTask[];
+  cumulativeTargets?: { subtopicId: string; target: number }[];
 }
 
 const DailyPlanSchema = new Schema<IDailyPlan>({
@@ -37,6 +38,13 @@ const DailyPlanSchema = new Schema<IDailyPlan>({
       id: { type: String, required: true },
       name: { type: String, required: true },
       completed: { type: Boolean, default: false }
+    }],
+    default: []
+  },
+  cumulativeTargets: {
+    type: [{
+      subtopicId: { type: String, required: true },
+      target: { type: Number, required: true }
     }],
     default: []
   }
