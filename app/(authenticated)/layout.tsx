@@ -9,7 +9,7 @@ export default function AuthenticatedLayout({
 }) {
     return (
         <GoalProvider>
-            <div className="min-h-screen bg-[#f0f0f0] text-black font-['Courier_New'] overflow-hidden relative">
+            <div className="min-h-screen bg-[#f0f0f0] text-black font-['Courier_New'] overflow-clip relative">
                 {/* Background Elements */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-300 rounded-full blur-[100px] opacity-30 animate-pulse" />
