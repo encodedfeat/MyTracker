@@ -22,7 +22,7 @@ export function AppHeader() {
     const [isGuideOpen, setIsGuideOpen] = React.useState(false);
     const [isProfileOpen, setIsProfileOpen] = React.useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-    
+
     const monthYear = selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
     return (
@@ -85,7 +85,7 @@ export function AppHeader() {
                                 </Link>
                             );
                         })}
-                        
+
                     </div>
 
                     {/* Middle-Right: Month Picker */}
@@ -121,8 +121,8 @@ export function AppHeader() {
                             >
                                 <span>?</span>
                             </button>
-                            <button
-                                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                            <Link
+                                href="/profile"
                                 className="focus:outline-none flex items-center justify-center"
                             >
                                 {session?.user?.image ? (
@@ -136,7 +136,7 @@ export function AppHeader() {
                                         <User size={20} className="text-black" />
                                     </div>
                                 )}
-                            </button>
+                            </Link>
 
                             {/* Dropdown Menu */}
                             {isProfileOpen && (
@@ -155,7 +155,7 @@ export function AppHeader() {
                                 </div>
                             )}
                         </div>
-                        
+
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

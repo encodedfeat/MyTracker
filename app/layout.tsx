@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/Providers';
+import { Footer } from '@/components/Footer';
 
-
-
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 
 export const metadata: Metadata = {
   title: {
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${playfair.variable} font-sans`}>
         <Providers>
 
           {/* --- CSS Animations Style Tag --- */}
@@ -57,8 +57,11 @@ export default function RootLayout({
           .dark-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #6b7280; }
         `}} />
 
-          <div className="min-h-screen bg-black font-sans text-slate-200">
-            {children}
+          <div className="min-h-screen flex flex-col bg-black font-sans text-slate-200">
+            <main className="flex-1 flex flex-col">
+              {children}
+            </main>
+            <Footer />
           </div>
         </Providers>
       </body>
