@@ -96,32 +96,30 @@ export function DailyFocusCard({
 
     let displayTasks = [...plannedTasks];
     let displaySubtopics = [...plannedSubtopics];
+    let displayAdHocTasks = [...adHocTasks];
 
     if (viewMode === 'overall') {
-        // Add tasks completed today that aren't already in plannedTasks
-        const extraTasks = tasks.filter(t => {
+        // Only tasks completed today
+        displayTasks = tasks.filter(t => {
             if (!t.completed || !t.completedAt) return false;
             const completedDateStr = getLocalDateString(new Date(t.completedAt));
-            if (completedDateStr !== todayString) return false;
-            return !plannedTasks.find(pt => pt.id === t.id);
+            return completedDateStr === todayString;
         });
-        displayTasks = [...plannedTasks, ...extraTasks];
 
-        // Add subtopics (cumulative or habit) that have logs today but aren't in plannedSubtopics
+        // Only subtopics (cumulative or habit) that have logs today
         const loggedSubtopicIds = new Set(
             dailyLogs
                 .filter(l => l.date === todayString)
                 .map(l => l.subtopicId)
         );
         
-        const extraSubtopics = subtopics.filter(st => {
+        displaySubtopics = subtopics.filter(st => {
             if (st.type === 'tasks') return false;
-            if (!loggedSubtopicIds.has(st.id)) return false;
-            if (plannedSubtopics.find(ps => ps.id === st.id)) return false;
-            return true; 
+            return loggedSubtopicIds.has(st.id);
         });
 
-        displaySubtopics = [...plannedSubtopics, ...extraSubtopics];
+        // Only completed ad hoc tasks
+        displayAdHocTasks = adHocTasks.filter(t => t.completed);
     }
 
     // Prepare table data grouped by Goal
@@ -192,7 +190,7 @@ export function DailyFocusCard({
                         </tr>
                     </thead>
                     <tbody>
-                        {tableData.length === 0 && adHocTasks.length === 0 ? (
+                        {tableData.length === 0 && displayAdHocTasks.length === 0 ? (
                             <tr>
                                 <td colSpan={3} className="p-8 text-center text-slate-500 italic">
                                     {viewMode === 'planned' ? 'No plan for this day.' : 'No activity recorded for this day.'}
@@ -300,7 +298,7 @@ export function DailyFocusCard({
                             ))
                         )}
                         
-                        {adHocTasks.length > 0 && (
+                        {displayAdHocTasks.length > 0 && (
                             <tr className="border-t-4 border-black">
                                 <td className="p-4 border-r-2 border-black align-top bg-slate-50">
                                     <div className="font-bold text-lg flex items-center gap-2 text-slate-700">
@@ -312,7 +310,7 @@ export function DailyFocusCard({
                                 </td>
                                 <td colSpan={2} className="p-4 align-top bg-white">
                                     <div className="space-y-3">
-                                        {adHocTasks.map(task => {
+                                        {displayAdHocTasks.map(task => {
                                             const isCompleted = task.completed;
                                             return (
                                                 <div key={task.id} className="flex items-start gap-2">
