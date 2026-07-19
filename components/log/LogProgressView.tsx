@@ -98,15 +98,17 @@ export function LogProgressView({
     const handleDeleteSubmit = async () => {
         const num = parseInt(deleteLogNumber, 10);
         if (isNaN(num) || num < 1 || num > todayLogs.length) {
-            setDeleteError(
-                `Enter a number between 1 and ${todayLogs.length} (you have ${todayLogs.length} ${todayLogs.length === 1 ? 'entry' : 'entries'} today).`,
-            );
+            if (todayLogs.length === 1) {
+                setDeleteError('Please enter 1 (you only have 1 entry today).');
+            } else {
+                setDeleteError(
+                    `Enter a number between 1 and ${todayLogs.length} (you have ${todayLogs.length} entries today).`,
+                );
+            }
             return;
         }
-        // Sort newest first so we delete the most recent entries
-        const sorted = [...todayLogs].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-        );
+        // Sort newest first using the MongoDB ObjectId (which is chronological) so we delete the most recent entries
+        const sorted = [...todayLogs].sort((a, b) => b.id.localeCompare(a.id));
         const logsToDelete = sorted.slice(0, num);
         try {
             if (onDeleteLog) {
@@ -207,77 +209,7 @@ export function LogProgressView({
                                 <div className="relative z-10">
                                     <h3 className="text-lg font-semibold text-black mb-4">Add New Log</h3>
 
-                                    {/* Delete Dialog */}
-                                    {showDeleteDialog && (
-                                        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-                                            <div
-                                                className="relative overflow-hidden rounded-lg max-w-md w-full mx-4 shadow-2xl border-2 border-slate-200"
-                                                style={{
-                                                    backgroundColor: '#fefefe',
-                                                    backgroundSize: 'cover',
-                                                    backgroundPosition: 'center'
-                                                }}
-                                            >
-                                                <div className="absolute inset-0 " />
-                                                <div className="relative z-10 p-8 text-center">
-                                                    <h3 className="text-2xl font-black text-black mb-4 uppercase tracking-wider">Delete Logs</h3>
-                                                    <p className="text-slate-800 mb-2 text-lg">
-                                                        Subtopic: <span className="font-bold text-black">{selectedSubtopic?.name}</span>
-                                                    </p>
-                                                    <p className="text-slate-700 mb-1 text-base">
-                                                        Today's total: <span className="font-bold text-black">{todayTotal} {selectedSubtopic?.unit || 'units'}</span>
-                                                    </p>
-                                                    <p className="text-slate-600 text-sm mb-4">
-                                                        ({todayLogs.length} {todayLogs.length === 1 ? 'entry' : 'entries'} logged today)
-                                                    </p>
-                                                    <p className="text-slate-700 text-sm mb-4">
-                                                        How many entries to delete? (1–{todayLogs.length})
-                                                    </p>
-                                                    <input
-                                                        type="number"
-                                                        step="1"
-                                                        min="1"
-                                                        max={todayLogs.length}
-                                                        value={deleteLogNumber}
-                                                        onChange={e => {
-                                                            const raw = e.target.value.replace(/[^0-9]/g, '');
-                                                            setDeleteLogNumber(raw);
-                                                            setDeleteError('');
-                                                        }}
-                                                        onKeyDown={e => {
-                                                            if (['.', '-', '+', 'e', 'E'].includes(e.key)) {
-                                                                e.preventDefault();
-                                                            }
-                                                        }}
-                                                        placeholder={`1–${todayLogs.length}`}
-                                                        className="w-full px-4 py-2 bg-white/50 border border-slate-500 text-black rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-white text-center text-lg font-bold"
-                                                        autoFocus
-                                                    />
-                                                    {deleteError && (
-                                                        <p className="text-red-400 text-sm mb-4 font-bold">{deleteError}</p>
-                                                    )}
-                                                    <div className="flex justify-center space-x-4 mt-4">
-                                                        <button
-                                                            onClick={() => {
-                                                                setShowDeleteDialog(false);
-                                                                setDeleteLogNumber('');
-                                                                setDeleteError('');
-                                                            }}
-                                                            className="button-89 bg-slate-600 hover:bg-slate-200 text-black text-sm py-3 px-6"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                        <button
-                                                            onClick={handleDeleteSubmit}
-                                                            className="button-89 bg-red-600 hover:bg-red-700 text-black text-sm py-3 px-6"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
+
 
                                     <form onSubmit={handleSubmit} className="space-y-6">
                                         <div className="space-y-2">
@@ -360,6 +292,81 @@ export function LogProgressView({
                     </div>
                 )}
             </div>
+
+            {/* Delete Dialog */}
+            {showDeleteDialog && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div
+                        className="relative overflow-hidden rounded-lg max-w-lg w-full mx-4 shadow-2xl border-2 border-slate-200"
+                        style={{
+                            backgroundColor: '#fefefe',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                        }}
+                    >
+                        <div className="absolute inset-0 " />
+                        <div className="relative z-10 p-8 text-center">
+                            <h3 className="text-2xl font-black text-black mb-4 uppercase tracking-wider">Delete Logs</h3>
+                            <p className="text-slate-800 mb-2 text-lg">
+                                Subtopic: <span className="font-bold text-black">{selectedSubtopic?.name}</span>
+                            </p>
+                            <p className="text-slate-700 mb-1 text-base">
+                                Today's total: <span className="font-bold text-black">{todayTotal} {selectedSubtopic?.unit || 'units'}</span>
+                            </p>
+                            <p className="text-slate-600 text-sm mb-4">
+                                ({todayLogs.length} {todayLogs.length === 1 ? 'entry' : 'entries'} logged today)
+                            </p>
+                            <p className="text-slate-700 text-sm mb-2">
+                                How many entries to delete? {todayLogs.length === 1 ? '(1)' : `(1–${todayLogs.length})`}
+                            </p>
+                            <p className="text-amber-600 text-xs mb-4 italic bg-amber-50 p-2 rounded border border-amber-200">
+                                Note: Deleting an entry will always remove your most recent (latest) log and its associated value first.
+                            </p>
+                            <input
+                                type="number"
+                                step="1"
+                                min="1"
+                                max={todayLogs.length}
+                                value={deleteLogNumber}
+                                onChange={e => {
+                                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                                    setDeleteLogNumber(raw);
+                                    setDeleteError('');
+                                }}
+                                onKeyDown={e => {
+                                    if (['.', '-', '+', 'e', 'E'].includes(e.key)) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                                placeholder={todayLogs.length === 1 ? '1' : `1–${todayLogs.length}`}
+                                className="w-full px-4 py-2 bg-white/50 border border-slate-500 text-black rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-white text-center text-lg font-bold"
+                                autoFocus
+                            />
+                            {deleteError && (
+                                <p className="text-red-400 text-sm mb-4 font-bold">{deleteError}</p>
+                            )}
+                            <div className="flex justify-center space-x-4 mt-4">
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteDialog(false);
+                                        setDeleteLogNumber('');
+                                        setDeleteError('');
+                                    }}
+                                    className="button-89 bg-slate-600 hover:bg-slate-200 text-black text-sm py-3 px-6"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteSubmit}
+                                    className="button-89 bg-red-600 hover:bg-red-700 text-black text-sm py-3 px-6"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
