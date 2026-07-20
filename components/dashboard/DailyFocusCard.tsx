@@ -140,7 +140,7 @@ export function DailyFocusCard({
     }).filter(row => row.items.length > 0);
 
     return (
-        <div className="bg-white rounded-xl border-2 border-black p-4 md:p-6 relative overflow-hidden">
+        <div className="bg-white/40 backdrop-blur-md rounded-xl border border-white/60 shadow-lg p-4 md:p-6 relative overflow-hidden">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4 border-b-2 border-black pb-4 mb-8">
                 <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black flex items-center justify-center lg:justify-start gap-3 order-1 lg:order-1">
                     <Target size={28} className="text-black" /> {formattedDate ? `${formattedDate} Focus` : "Daily Focus"}
@@ -308,7 +308,7 @@ export function DailyFocusCard({
                                         These tasks are one-offs for today and do not count toward your monthly goals.
                                     </div>
                                 </td>
-                                <td colSpan={2} className="p-4 align-top bg-white">
+                                <td colSpan={2} className="p-4 align-top bg-white/40">
                                     <div className="space-y-3">
                                         {displayAdHocTasks.map(task => {
                                             const isCompleted = task.completed;

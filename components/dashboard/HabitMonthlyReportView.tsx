@@ -49,9 +49,9 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
 
         return (
             <div
-                className="w-full relative overflow-hidden rounded-3xl border border-slate-300/50 shadow-2xl mb-8"
+                className="w-full relative overflow-hidden bg-white/40 backdrop-blur-md rounded-3xl border border-white/60 shadow-2xl mb-8"
                 style={{
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'transparent',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
@@ -115,7 +115,7 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
     // Compact view for Dashboard (checkbox-based, grouped by category)
     if (isCompact) {
         return (
-            <div className="w-full relative overflow-hidden bg-white rounded-xl border-2 border-black mb-8">
+            <div className="w-full relative overflow-hidden bg-white/40 backdrop-blur-md rounded-xl border border-white/60 shadow-lg mb-8">
                 <div className="absolute inset-0  pointer-events-none" />
                 <div className="relative z-10">
                     <div className="p-4 border-b border-slate-300/50">
@@ -193,9 +193,9 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
     // Full view for Manage page (grouped by category)
     return (
         <div
-            className="w-full relative overflow-hidden rounded-3xl border border-slate-300/50 shadow-2xl mb-8"
+            className="w-full relative overflow-hidden bg-white/40 backdrop-blur-md rounded-3xl border border-white/60 shadow-2xl mb-8"
             style={{
-                backgroundColor: '#ffffff',
+                backgroundColor: 'transparent',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
@@ -223,9 +223,8 @@ export function HabitMonthlyReportView({ subtopics, goals, onLogHabit, isCompact
                 </div>
 
                 <div
-                    className="relative overflow-hidden border border-black rounded-lg"
+                    className="relative overflow-hidden border border-white/40 rounded-lg bg-white/20 backdrop-blur-sm"
                     style={{
-                        backgroundColor: '#fefefe',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat'

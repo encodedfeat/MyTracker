@@ -50,7 +50,7 @@ export function SubtopicProgressCircle({ subtopic, categoryName }: SubtopicProgr
   }
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-6 flex flex-col items-center justify-center shadow-lg hover:border-zinc-300 transition-colors duration-300">
+    <div className="bg-white/40 backdrop-blur-md border border-white/60 rounded-xl p-6 flex flex-col items-center justify-center shadow-lg hover:border-white/80 transition-colors duration-300">
       <h2 className="text-lg font-bold text-black text-center truncate w-full mb-1">
         {subtopic.name}
       </h2>

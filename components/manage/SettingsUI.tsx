@@ -16,7 +16,7 @@ export function ProfileSection({ session }: { session?: any }) {
                         <button className="w-full sm:w-auto flex justify-center items-center gap-2 px-4 py-2 border-2 border-black rounded-md font-bold text-sm hover:bg-slate-100 transition-colors shadow-[2px_2px_0_0_#000] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]">
                             <User size={16} /> Edit Profile
                         </button>
-                        <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full sm:w-auto flex justify-center items-center gap-2 px-4 py-2 border-2 border-red-600 text-red-600 rounded-md font-bold text-sm hover:bg-red-50 transition-colors shadow-[2px_2px_0_0_#dc2626] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]">
+                        <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full sm:w-auto flex justify-center items-center gap-2 px-4 py-2 border-2 border-red-600 text-red-600 rounded-md font-bold text-sm hover:bg-red-50 transition-colors shadow-[2px_2px_0_0_#dc2626] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]">
                             <LogOut size={16} /> Logout
                         </button>
                     </div>

@@ -17,7 +17,8 @@ export const authConfig: NextAuthConfig = {
                 nextUrl.pathname.startsWith('/home') ||
                 nextUrl.pathname.startsWith('/dashboard') ||
                 nextUrl.pathname.startsWith('/manage') ||
-                nextUrl.pathname.startsWith('/help');
+                nextUrl.pathname.startsWith('/help') ||
+                nextUrl.pathname.startsWith('/profile');
 
             if (isProtected && !isLoggedIn) {
                 return Response.redirect(new URL('/', nextUrl.origin));

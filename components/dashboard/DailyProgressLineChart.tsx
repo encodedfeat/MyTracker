@@ -143,7 +143,7 @@ export function DailyProgressLineChart({
     : "Today's Total";
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-xl border-2 border-black p-4 overflow-hidden relative">
+    <div className="h-full flex flex-col bg-white/40 backdrop-blur-md rounded-xl border border-white/60 shadow-lg p-4 overflow-hidden relative">
       <div className="absolute inset-0  pointer-events-none" />
       <div className="relative z-10 flex flex-col h-full">
         <div className="grid grid-cols-2 sm:flex sm:flex-row items-center gap-2 sm:gap-3 mb-6 w-full">

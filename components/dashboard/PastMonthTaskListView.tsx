@@ -93,7 +93,7 @@ export function PastMonthTaskListView({ goals, subtopics, tasks }: PastMonthTask
                     if (goalSubtopics.length === 0) return null;
 
                     return (
-                        <div key={goal.id} className="bg-white/50 rounded-xl p-6 border border-black">
+                        <div key={goal.id} className="bg-white/40 backdrop-blur-md rounded-xl p-6 border border-white/60 shadow-lg">
                             <div className="flex items-center space-x-3 mb-6">
                                 <span className="text-2xl">{goal.icon}</span>
                                 <h3 className="text-xl font-semibold text-black">{goal.name}</h3>
