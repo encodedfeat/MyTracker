@@ -25,10 +25,14 @@ export default function LandingPage() {
 
             {/* HEADER */}
             <header className="w-full absolute top-0 left-0 right-0 px-6 md:px-16 py-6 flex justify-between items-center z-50 max-w-7xl mx-auto">
-                <div className="font-serif font-bold text-2xl flex items-center gap-2 text-slate-900">
-                    <Sparkles className="text-slate-400 w-5 h-5" />
+                <Link href="/" className="font-serif font-bold text-2xl flex items-center gap-2 text-slate-900">
+                    <img
+                        src="/assist/guide/brutalist_logo.png"
+                        alt="MyTracker Logo"
+                        className="h-8 w-8 object-cover rounded-md grayscale hover:grayscale-0 transition-all duration-300"
+                    />
                     MyTracker
-                </div>
+                </Link>
                 <div className="hidden md:flex items-center gap-4">
                     <Link href="/login" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Sign in</Link>
                     <Link href="/login" className="px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-medium hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 flex items-center gap-2">

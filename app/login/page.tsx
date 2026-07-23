@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-[#f0f0f0] relative overflow-hidden font-sans">
+        <div className="min-h-screen w-full flex items-center justify-center bg-[#f0f0f0] relative overflow-hidden font-['Courier_New']">
             {/* Background Elements — identical to authenticated layout */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-300 rounded-full blur-[100px] opacity-30 animate-pulse" />
@@ -23,7 +23,11 @@ export default function LoginPage() {
 
                     {/* Logo */}
                     <div className="flex items-center gap-2 mb-8">
-                        <Sparkles className="text-slate-400 w-6 h-6" />
+                        <img
+                            src="/assist/guide/brutalist_logo.png"
+                            alt="MyTracker Logo"
+                            className="h-8 w-8 object-cover rounded-md grayscale hover:grayscale-0 transition-all duration-300"
+                        />
                         <span className="font-serif font-bold text-2xl text-slate-900">MyTracker</span>
                     </div>
 
