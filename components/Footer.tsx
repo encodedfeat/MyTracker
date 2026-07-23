@@ -5,7 +5,7 @@ import { FaTwitter, FaInstagram, FaGithub, FaDiscord } from 'react-icons/fa';
 
 export function Footer() {
     return (
-        <footer className="bg-[#fcfcfc] text-black py-16 border-t border-gray-200">
+        <footer className="bg-[#fcfcfc] text-black py-16 border-t border-gray-200 font-['Courier_New']">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="grid grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-12 lg:gap-12">
 

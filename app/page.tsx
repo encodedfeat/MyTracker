@@ -16,7 +16,7 @@ export default function LandingPage() {
     }, [session, router]);
 
     return (
-        <div className="w-full bg-[#f0f0f0] text-slate-800 font-sans pb-32 relative overflow-hidden z-10">
+        <div className="w-full bg-[#f0f0f0] text-slate-800 font-['Courier_New'] pb-32 relative overflow-hidden z-10">
             {/* Background Elements — identical to authenticated layout */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-300 rounded-full blur-[100px] opacity-30 animate-pulse" />
@@ -128,8 +128,8 @@ export default function LandingPage() {
                             <div className="grid grid-cols-2 gap-8">
                                 {[
                                     { stat: '87%', text: 'Reported higher daily clarity' },
-                                    { stat: '3.2M', text: 'Goals accomplished globally' },
-                                    { stat: '15M', text: 'Daily routines optimized' },
+                                    { stat: '50+', text: 'Goals accomplished globally' },
+                                    { stat: '100+', text: 'Daily routines optimized' },
                                     { stat: '4.9', text: 'Average user satisfaction' }
                                 ].map((item, i) => (
                                     <div key={i} className="space-y-3">

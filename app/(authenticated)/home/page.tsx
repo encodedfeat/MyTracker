@@ -248,8 +248,8 @@ export default function AuthenticatedHome() {
                             <div className="grid grid-cols-2 gap-8">
                                 {[
                                     { stat: '87%', text: 'Reported higher daily clarity' },
-                                    { stat: '3.2M', text: 'Goals accomplished globally' },
-                                    { stat: '15M', text: 'Daily routines optimized' },
+                                    { stat: '50+', text: 'Goals accomplished globally' },
+                                    { stat: '100+', text: 'Daily routines optimized' },
                                     { stat: '4.9', text: 'Average user satisfaction' }
                                 ].map((item, i) => (
                                     <div key={i} className="space-y-3">
