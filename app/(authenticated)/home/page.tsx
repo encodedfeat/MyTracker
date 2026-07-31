@@ -54,7 +54,7 @@ export default function AuthenticatedHome() {
     const fillPath = trendPoints.length > 0 ? `${trendPath} L100,100 L0,100 Z` : "M0,90 Q20,60 40,70 T80,40 T100,20 L100,100 L0,100 Z";
 
     return (
-        <div className="w-full bg-transparent text-slate-800 font-sans pb-32 relative overflow-hidden z-10">
+        <div className="w-full bg-transparent text-slate-800 font-['Courier_New'] pb-32 relative overflow-hidden z-10">
 
 
             {/* HERO SECTION */}
