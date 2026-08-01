@@ -208,7 +208,13 @@ export function DailyFocusCard({
                                         <div className="space-y-3">
                                             {row.goalTasks.map(task => {
                                                 const st = subtopics.find(s => s.id === task.subtopicId);
-                                                const isCompleted = task.completed;
+                                                let isCompleted = task.completed;
+                                                if (task.completed && task.completedAt) {
+                                                    const completedDateStr = getLocalDateString(new Date(task.completedAt));
+                                                    if (completedDateStr > todayString) {
+                                                        isCompleted = false; // it was completed AFTER the date we're viewing
+                                                    }
+                                                }
                                                 return (
                                                     <div key={task.id} className="flex items-start gap-2">
                                                         <div className="mt-1">

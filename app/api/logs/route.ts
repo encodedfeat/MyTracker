@@ -14,12 +14,7 @@ export async function POST(request: Request) {
         await dbConnect();
         const body = await request.json();
 
-        if (body.date) {
-            const today = getLocalDateString(new Date());
-            if (body.date !== today) {
-                return NextResponse.json({ error: 'Cannot log progress for past or future dates. Only today is allowed.' }, { status: 400 });
-            }
-        }
+        // Removed server-side date restriction to avoid timezone-related errors
 
         const log = await Log.create({ ...body, userId: session.user.id });
 

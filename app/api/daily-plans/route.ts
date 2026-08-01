@@ -19,10 +19,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Date is required' }, { status: 400 });
         }
 
-        const today = getLocalDateString(new Date());
-        if (date !== today) {
-            return NextResponse.json({ error: 'Cannot save plans for past or future dates. Only today is allowed.' }, { status: 400 });
-        }
+        // Removed server-side date restriction to avoid timezone-related errors
 
         const userId = session.user.id;
 

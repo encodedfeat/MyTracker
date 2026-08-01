@@ -37,7 +37,7 @@ export function RecentLogsView({ subtopics, dailyLogs = [] }: RecentLogsViewProp
     });
 
     const renderLogColumn = (title: string, logs: Log[]) => (
-        <div className="flex flex-col h-full bg-slate-50 rounded-xl p-4 border border-slate-200">
+        <div className="flex flex-col h-auto lg:h-full bg-slate-50 rounded-xl p-4 border border-slate-200">
             <h4 className="text-lg font-bold text-black mb-4 flex justify-between items-center border-b border-slate-300 pb-2">
                 {title}
                 <span className="text-xs font-bold text-slate-600 bg-slate-200 px-2 py-1 rounded-full">{logs.length}</span>
@@ -93,7 +93,7 @@ export function RecentLogsView({ subtopics, dailyLogs = [] }: RecentLogsViewProp
                 </span>
             </h3>
 
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-hidden">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-y-auto lg:overflow-hidden pr-2 lg:pr-0 pb-4 lg:pb-0">
                 {renderLogColumn('Tasks', taskLogs)}
                 {renderLogColumn('Habits', habitLogs)}
                 {renderLogColumn('Cumulative', cumulativeLogs)}

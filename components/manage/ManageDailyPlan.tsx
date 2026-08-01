@@ -21,6 +21,7 @@ interface Task {
     subtopicId: string;
     name: string;
     completed: boolean;
+    completedAt?: string;
 }
 
 interface IAdHocTask {
@@ -291,6 +292,13 @@ export function ManageDailyPlan({
                                         <div className="space-y-3">
                                             {row.goalTasks.map(task => {
                                                 const st = subtopics.find(s => s.id === task.subtopicId);
+                                                let isCompleted = task.completed;
+                                                if (task.completed && task.completedAt) {
+                                                    const completedDateStr = getLocalDateString(new Date(task.completedAt));
+                                                    if (completedDateStr > dateString) {
+                                                        isCompleted = false;
+                                                    }
+                                                }
                                                 return (
                                                     <label key={task.id} className={`flex items-start space-x-3 group ${effectiveIsEditMode && !isReadOnly ? 'cursor-pointer' : ''}`}>
                                                         {effectiveIsEditMode ? (
@@ -309,7 +317,7 @@ export function ManageDailyPlan({
                                                         ) : (
                                                             isPast ? (
                                                                 <div className="relative flex flex-shrink-0 items-center justify-center mt-1">
-                                                                    {task.completed ? (
+                                                                    {isCompleted ? (
                                                                         <Check size={20} className="text-black" />
                                                                     ) : (
                                                                         <X size={20} className="text-slate-300" />
@@ -319,7 +327,7 @@ export function ManageDailyPlan({
                                                                 <div className="flex-shrink-0 w-2 h-2 rounded-full bg-black mt-2 self-start"></div>
                                                             )
                                                         )}
-                                                        <span className={`text-base font-medium ${effectiveIsEditMode ? 'group-hover:text-blue-600' : ''} transition-colors ${task.completed ? 'line-through text-slate-400' : 'text-black'}`}>
+                                                        <span className={`text-base font-medium ${effectiveIsEditMode ? 'group-hover:text-blue-600' : ''} transition-colors ${isCompleted ? 'line-through text-slate-400' : 'text-black'}`}>
                                                             {task.name} {st && <span className="text-xs text-slate-400 ml-2 font-normal">({st.name})</span>}
                                                         </span>
                                                     </label>
