@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Check, Trash2, Pencil, X, Lock, HelpCircle } from 'lucide-react';
+import { Check, Trash2, Pencil, X, Lock, HelpCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { BrutalistSelect } from '@/components/ui/BrutalistSelect';
 
 // Define the types this component needs
@@ -54,6 +54,14 @@ export function ManageTasks({
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [collapsedSubtopics, setCollapsedSubtopics] = useState<Record<string, boolean>>({});
+
+  const toggleSubtopicCollapse = (subtopicId: string) => {
+    setCollapsedSubtopics(prev => ({
+      ...prev,
+      [subtopicId]: !prev[subtopicId]
+    }));
+  };
 
   // Initialize selectedGoalId with the first goal if available
   useEffect(() => {
@@ -243,11 +251,21 @@ export function ManageTasks({
                             return (
                               <tr key={subtopic.id} className="group border-b-2 border-slate-200 last:border-b-0">
                                 <td className="py-6 pl-6 pr-4 w-1/4 align-top border-r-2 border-slate-200  backdrop-blur-sm">
-                                  <span className="text-lg font-black text-black uppercase tracking-wider">{subtopic.name}</span>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-lg font-black text-black uppercase tracking-wider break-words pr-2">{subtopic.name}</span>
+                                    <button 
+                                      onClick={() => toggleSubtopicCollapse(subtopic.id)}
+                                      className="p-1 text-slate-500 hover:text-black hover:bg-slate-200 rounded transition-colors flex-shrink-0"
+                                      title={collapsedSubtopics[subtopic.id] ? "Expand" : "Collapse"}
+                                    >
+                                      {collapsedSubtopics[subtopic.id] ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                                    </button>
+                                  </div>
                                 </td>
                                 <td className="p-4 align-top ">
-                                  <div className="space-y-3">
-                                    {/* Task List */}
+                                  {!collapsedSubtopics[subtopic.id] && (
+                                    <div className="space-y-3">
+                                      {/* Task List */}
                                     {subtopicTasks.map(task => {
                                       const isLocked = task.completed && task.completedAt && new Date(task.completedAt).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
 
@@ -380,7 +398,8 @@ export function ManageTasks({
                                         </button>
                                       </div>
                                     )}
-                                  </div>
+                                    </div>
+                                  )}
                                 </td>
                               </tr>
                             );
@@ -425,13 +444,22 @@ export function ManageTasks({
                           <div className="absolute inset-0  pointer-events-none" />
                           <div className="relative z-10">
                             {/* Header */}
-                            <div className="p-4 bg-white/80 border-b border-slate-300">
-                              <span className="text-lg font-black text-black uppercase tracking-wider">{subtopic.name}</span>
+                            <div 
+                              className="p-4 bg-white/80 border-b border-slate-300 flex items-center justify-between cursor-pointer"
+                              onClick={() => toggleSubtopicCollapse(subtopic.id)}
+                            >
+                              <span className="text-lg font-black text-black uppercase tracking-wider break-words pr-2">{subtopic.name}</span>
+                              <button 
+                                className="p-1 text-slate-500 hover:text-black hover:bg-slate-200 rounded transition-colors flex-shrink-0"
+                              >
+                                {collapsedSubtopics[subtopic.id] ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                              </button>
                             </div>
 
                             {/* Content */}
-                            <div className="p-4 space-y-3">
-                              {/* Task List */}
+                            {!collapsedSubtopics[subtopic.id] && (
+                              <div className="p-4 space-y-3">
+                                {/* Task List */}
                               {subtopicTasks.map(task => {
                                 const isLocked = task.completed && task.completedAt && new Date(task.completedAt).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
 
@@ -564,7 +592,8 @@ export function ManageTasks({
                                   </button>
                                 </div>
                               )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
