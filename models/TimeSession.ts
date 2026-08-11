@@ -15,6 +15,8 @@ export interface ITimeSession extends Document {
   subtopicType: string;
   durationSeconds: number; // Total elapsed time in seconds
   durationDisplay: string; // e.g. "1h 30m"
+  mode?: 'stopwatch' | 'countdown';
+  countdownTarget?: number; // target time in seconds
   date: Date;
   createdAt: Date;
 }
@@ -75,6 +77,15 @@ const TimeSessionSchema = new Schema<ITimeSession>({
   durationDisplay: {
     type: String,
     required: true,
+  },
+  mode: {
+    type: String,
+    enum: ['stopwatch', 'countdown'],
+    default: 'stopwatch',
+  },
+  countdownTarget: {
+    type: Number,
+    required: false,
   },
   date: {
     type: Date,

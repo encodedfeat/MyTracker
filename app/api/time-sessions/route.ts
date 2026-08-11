@@ -44,6 +44,8 @@ export async function GET(request: Request) {
             subtopicType: s.subtopicType || '',
             durationSeconds: s.durationSeconds,
             durationDisplay: s.durationDisplay,
+            mode: s.mode || 'stopwatch',
+            countdownTarget: s.countdownTarget,
             date: s.date.toISOString().split('T')[0],
             createdAt: s.createdAt.toISOString(),
         }));
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
         await dbConnect();
         const body = await request.json();
 
-        const { goalId, subtopicId, taskId, durationSeconds, durationDisplay, date, goalName, subtopicName, taskName, goalIcon, subtopicType, isAdHoc, adHocTitle } = body;
+        const { goalId, subtopicId, taskId, durationSeconds, durationDisplay, date, goalName, subtopicName, taskName, goalIcon, subtopicType, isAdHoc, adHocTitle, mode, countdownTarget } = body;
 
         if (isAdHoc) {
             if (!adHocTitle || !durationSeconds || !date) {
@@ -92,6 +94,8 @@ export async function POST(request: Request) {
             subtopicType: subtopicType || '',
             durationSeconds,
             durationDisplay,
+            mode: mode || 'stopwatch',
+            countdownTarget: countdownTarget || undefined,
             date: new Date(date),
         });
 
@@ -110,6 +114,8 @@ export async function POST(request: Request) {
             subtopicType: timeSession.subtopicType || '',
             durationSeconds: timeSession.durationSeconds,
             durationDisplay: timeSession.durationDisplay,
+            mode: timeSession.mode || 'stopwatch',
+            countdownTarget: timeSession.countdownTarget,
             date: timeSession.date.toISOString().split('T')[0],
             createdAt: timeSession.createdAt.toISOString(),
         };

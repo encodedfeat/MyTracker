@@ -39,6 +39,8 @@ export default function LockInPage() {
     // --- Timer State ---
     const [isRunning, setIsRunning] = useState(false);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
+    const [timerMode, setTimerMode] = useState<'stopwatch' | 'countdown'>('stopwatch');
+    const [countdownTarget, setCountdownTarget] = useState(3600); // Default 1 hour
     const [isSaving, setIsSaving] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -147,7 +149,14 @@ export default function LockInPage() {
     useEffect(() => {
         if (isRunning) {
             intervalRef.current = setInterval(() => {
-                setElapsedSeconds(prev => prev + 1);
+                setElapsedSeconds(prev => {
+                    const next = prev + 1;
+                    if (timerMode === 'countdown' && next >= countdownTarget) {
+                        setIsRunning(false);
+                        return countdownTarget;
+                    }
+                    return next;
+                });
             }, 1000);
         } else {
             if (intervalRef.current) {
@@ -174,10 +183,15 @@ export default function LockInPage() {
     const formatDurationDisplay = (totalSeconds: number) => {
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        if (hours > 0 && minutes > 0 && seconds > 0) return `${hours}h ${minutes}m ${seconds}s`;
         if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
+        if (hours > 0 && seconds > 0) return `${hours}h ${seconds}s`;
         if (hours > 0) return `${hours}h`;
+        if (minutes > 0 && seconds > 0) return `${minutes}m ${seconds}s`;
         if (minutes > 0) return `${minutes}m`;
-        return `${totalSeconds}s`;
+        return `${seconds}s`;
     };
 
     const canStart = (selectedGoalId && selectedSubtopicId) || adHocTitle.trim().length > 0;
@@ -212,6 +226,8 @@ export default function LockInPage() {
                 subtopicType: isAdHoc ? '' : (selectedSubtopic?.type || ''),
                 durationSeconds: elapsedSeconds,
                 durationDisplay: formatDurationDisplay(elapsedSeconds),
+                mode: timerMode,
+                countdownTarget: timerMode === 'countdown' ? countdownTarget : undefined,
                 date: getLocalDateString(new Date()),
             };
             const res = await fetch('/api/time-sessions', {
@@ -224,6 +240,11 @@ export default function LockInPage() {
                 const newSession = await res.json();
                 setTimeSessions(prev => [newSession, ...prev]);
                 handleReset();
+                setSelectedGoalId('');
+                setSelectedSubtopicId('');
+                setSelectedTaskId('');
+                setAdHocTitle('');
+                setCountdownTarget(3600);
             }
         } catch (error) {
             console.error('Error saving time session:', error);
@@ -333,7 +354,8 @@ export default function LockInPage() {
         return filteredHistory.reduce((sum, s) => sum + s.durationSeconds, 0);
     }, [filteredHistory]);
 
-    const time = formatTime(elapsedSeconds);
+    const displaySeconds = timerMode === 'countdown' ? Math.max(0, countdownTarget - elapsedSeconds) : elapsedSeconds;
+    const time = formatTime(displaySeconds);
 
     // Helper to get names
     const getGoalName = (goalId: string) => goals.find(g => g.id === goalId)?.name || 'Unknown';
@@ -566,6 +588,22 @@ export default function LockInPage() {
 
                     {/* Timer Display */}
                     <div className="p-8 md:p-12 flex flex-col items-center">
+                        {isCurrentMonth && (
+                            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl mb-8">
+                                <button
+                                    onClick={() => !isRunning && setTimerMode('stopwatch')}
+                                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${timerMode === 'stopwatch' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Stopwatch
+                                </button>
+                                <button
+                                    onClick={() => !isRunning && setTimerMode('countdown')}
+                                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${timerMode === 'countdown' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Countdown
+                                </button>
+                            </div>
+                        )}
                         {/* Animated ring */}
                         <div className={`relative w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center mb-8 transition-all duration-700 ${isCurrentMonth && isRunning
                             ? 'bg-gradient-to-br from-slate-50 to-[#8fb2c4]/10 shadow-[0_0_60px_rgba(143,178,196,0.3)]'
@@ -622,7 +660,62 @@ export default function LockInPage() {
 
                         {/* Control Buttons - Only show for current month */}
                         {isCurrentMonth && (
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-col items-center gap-6">
+                                {/* Countdown Adjustments */}
+                                {timerMode === 'countdown' && !isRunning && elapsedSeconds === 0 && (
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="flex items-center gap-2 md:gap-3">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={Math.floor(countdownTarget / 3600)}
+                                                onChange={(e) => {
+                                                    const h = Math.max(0, parseInt(e.target.value) || 0);
+                                                    const m = Math.floor((countdownTarget % 3600) / 60);
+                                                    const s = countdownTarget % 60;
+                                                    setCountdownTarget(h * 3600 + m * 60 + s);
+                                                }}
+                                                className="w-14 h-10 md:w-16 md:h-12 bg-slate-900 text-white rounded-xl text-center text-base md:text-lg font-medium focus:outline-none focus:ring-2 focus:ring-slate-400 transition-shadow"
+                                                title="Hours"
+                                            />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="59"
+                                                value={Math.floor((countdownTarget % 3600) / 60)}
+                                                onChange={(e) => {
+                                                    const h = Math.floor(countdownTarget / 3600);
+                                                    const m = Math.min(59, Math.max(0, parseInt(e.target.value) || 0));
+                                                    const s = countdownTarget % 60;
+                                                    setCountdownTarget(h * 3600 + m * 60 + s);
+                                                }}
+                                                className="w-14 h-10 md:w-16 md:h-12 bg-slate-900 text-white rounded-xl text-center text-base md:text-lg font-medium focus:outline-none focus:ring-2 focus:ring-slate-400 transition-shadow"
+                                                title="Minutes"
+                                            />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="59"
+                                                value={countdownTarget % 60}
+                                                onChange={(e) => {
+                                                    const h = Math.floor(countdownTarget / 3600);
+                                                    const m = Math.floor((countdownTarget % 3600) / 60);
+                                                    const s = Math.min(59, Math.max(0, parseInt(e.target.value) || 0));
+                                                    setCountdownTarget(h * 3600 + m * 60 + s);
+                                                }}
+                                                className="w-14 h-10 md:w-16 md:h-12 bg-slate-900 text-white rounded-xl text-center text-base md:text-lg font-medium focus:outline-none focus:ring-2 focus:ring-slate-400 transition-shadow"
+                                                title="Seconds"
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => setCountdownTarget(prev => Math.max(300, prev - 300))} className="px-3 md:px-4 py-1.5 md:py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-full transition-colors">-5m</button>
+                                            <button onClick={() => setCountdownTarget(prev => prev + 300)} className="px-3 md:px-4 py-1.5 md:py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-full transition-colors">+5m</button>
+                                            <button onClick={() => setCountdownTarget(prev => prev + 900)} className="px-3 md:px-4 py-1.5 md:py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-full transition-colors">+15m</button>
+                                            <button onClick={() => setCountdownTarget(prev => prev + 3600)} className="px-3 md:px-4 py-1.5 md:py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-full transition-colors">+1h</button>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-4">
                                 {/* Reset */}
                                 <button
                                     onClick={handleReset}
@@ -659,12 +752,13 @@ export default function LockInPage() {
                                         <Save size={18} />
                                     )}
                                 </button>
+                                </div>
                             </div>
                         )}
 
                         {isCurrentMonth && !canStart && (
                             <p className="mt-4 text-xs text-slate-400 text-center">
-                                Select a category and subtopic to start the timer
+                                Select a category or enter a Quick Focus to start timer
                             </p>
                         )}
                     </div>
