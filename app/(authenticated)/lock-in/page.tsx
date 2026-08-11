@@ -1019,7 +1019,7 @@ export default function LockInPage() {
                                                         </div>
                                                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                                                             <span className="text-xs font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md tabular-nums">
-                                                                {session.durationDisplay}
+                                                                {formatDurationDisplay(session.durationSeconds)}
                                                             </span>
                                                             <button
                                                                 onClick={() => setDeleteConfirm(session.id)}
