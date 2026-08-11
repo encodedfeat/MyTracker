@@ -5,7 +5,7 @@ import { useGoalTracker } from '@/context/GoalContext';
 import { getLocalDateString } from '@/lib/dateUtils';
 import { GoalIcon } from '@/components/ui/GoalIcon';
 import {
-    Timer, Play, Pause, RotateCcw, Save, ChevronDown, ChevronLeft, Filter, Clock, Trash2,
+    Timer, Play, Pause, RotateCcw, Save, ChevronDown, ChevronLeft, ChevronRight, Filter, Clock, Trash2,
     Target, BookOpen, CheckSquare, Zap, X, Lock, CalendarClock
 } from 'lucide-react';
 
@@ -65,6 +65,7 @@ export default function LockInPage() {
     const [timeSessions, setTimeSessions] = useState<TimeSessionRecord[]>([]);
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+    const [progressDate, setProgressDate] = useState<Date>(new Date());
 
     // --- Filter State ---
     const [filterGoalId, setFilterGoalId] = useState<string>('');
@@ -275,9 +276,47 @@ export default function LockInPage() {
         }
     }, [adHocTitle]);
 
+    // --- Progress Date helpers ---
+    const progressDateString = useMemo(() => getLocalDateString(progressDate), [progressDate]);
+    const isProgressToday = useMemo(() => getLocalDateString(progressDate) === getLocalDateString(new Date()), [progressDate]);
+    const isProgressFuture = useMemo(() => {
+        const todayStr = getLocalDateString(new Date());
+        return progressDateString > todayStr;
+    }, [progressDateString]);
+
+    const progressDateLabel = useMemo(() => {
+        if (isProgressToday) return "Today's Progress";
+        return progressDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + "'s Progress";
+    }, [progressDate, isProgressToday]);
+
+    const goProgressPrevDay = () => {
+        setProgressDate(prev => {
+            const d = new Date(prev);
+            d.setDate(d.getDate() - 1);
+            // Don't go before the start of the selected month
+            if (d.getMonth() !== selectedDate.getMonth() || d.getFullYear() !== selectedDate.getFullYear()) return prev;
+            return d;
+        });
+    };
+
+    const goProgressNextDay = () => {
+        setProgressDate(prev => {
+            const d = new Date(prev);
+            d.setDate(d.getDate() + 1);
+            // Don't go past end of month
+            const lastDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+            if (d.getDate() > lastDay || d.getMonth() !== selectedDate.getMonth() || d.getFullYear() !== selectedDate.getFullYear()) return prev;
+            return d;
+        });
+    };
+
     // --- Filtered History ---
     const filteredHistory = useMemo(() => {
         return timeSessions.filter(session => {
+            // Filter by progressDate (day-level)
+            const sessionDateStr = getLocalDateString(new Date(session.createdAt));
+            if (sessionDateStr !== progressDateString) return false;
+
             if (filterGoalId && session.goalId !== filterGoalId) return false;
             if (filterSubtopicId && session.subtopicId !== filterSubtopicId) return false;
             if (filterType) {
@@ -287,7 +326,7 @@ export default function LockInPage() {
             }
             return true;
         });
-    }, [timeSessions, filterGoalId, filterSubtopicId, filterType, subtopics]);
+    }, [timeSessions, progressDateString, filterGoalId, filterSubtopicId, filterType, subtopics]);
 
     // --- Total Time ---
     const totalFilteredSeconds = useMemo(() => {
@@ -340,7 +379,10 @@ export default function LockInPage() {
                             {/* History Dropdown Trigger */}
                             <div className="relative" ref={historyDropdownRef}>
                                 <button
-                                    onClick={() => setIsHistoryDropdownOpen(!isHistoryDropdownOpen)}
+                                    onClick={() => {
+                                        if (!isHistoryDropdownOpen) setProgressDate(new Date());
+                                        setIsHistoryDropdownOpen(!isHistoryDropdownOpen);
+                                    }}
                                     className={`p-2 rounded-xl transition-all border-2 flex items-center gap-2 ${isHistoryDropdownOpen ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-200 hover:text-slate-600 hover:border-slate-300'}`}
                                     title="View Today's Progress"
                                 >
@@ -636,29 +678,57 @@ export default function LockInPage() {
                             />
                             {/* Drawer */}
                             <div className="absolute top-0 right-0 bottom-0 left-0 w-full flex flex-col bg-white shadow-2xl z-50 transform transition-transform translate-x-0 rounded-[2rem]">
-                                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => setIsHistoryDropdownOpen(false)}
-                                            className="p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-colors"
-                                            title="Back to Timer"
-                                        >
-                                            <ChevronLeft size={18} />
-                                        </button>
-                                        <h3 className="text-base font-semibold text-slate-900">Today's Progress</h3>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#8fb2c4]/10 text-xs font-bold text-slate-700 tabular-nums">
-                                            <Timer size={12} className="text-[#8fb2c4]" />
-                                            {formatDurationDisplay(totalFilteredSeconds)}
+                                <div className="px-5 py-3 border-b border-slate-100 shrink-0 bg-slate-50/50">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => setIsHistoryDropdownOpen(false)}
+                                                className="p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                                                title="Back to Timer"
+                                            >
+                                                <ChevronLeft size={18} />
+                                            </button>
+                                            <h3 className="text-base font-semibold text-slate-900">{progressDateLabel}</h3>
                                         </div>
-                                        <button
-                                            onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                            className={`p-1.5 rounded-lg transition-colors ${isFilterOpen || filterGoalId || filterSubtopicId || filterType ? 'bg-slate-200 text-slate-900' : 'text-slate-400 hover:bg-slate-100'}`}
-                                            title="Filters"
-                                        >
-                                            <Filter size={14} />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            {/* Inline Date Picker */}
+                                            <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg px-1 py-0.5">
+                                                <button
+                                                    onClick={goProgressPrevDay}
+                                                    className="p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                                                >
+                                                    <ChevronLeft size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setProgressDate(new Date())}
+                                                    className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${
+                                                        isProgressToday
+                                                            ? 'bg-slate-900 text-white'
+                                                            : 'bg-white text-slate-600 hover:bg-slate-200 shadow-sm'
+                                                    }`}
+                                                >
+                                                    {isProgressToday ? 'Today' : progressDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                </button>
+                                                <button
+                                                    onClick={goProgressNextDay}
+                                                    disabled={isProgressToday || isProgressFuture}
+                                                    className="p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                                >
+                                                    <ChevronRight size={14} />
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#8fb2c4]/10 text-xs font-bold text-slate-700 tabular-nums">
+                                                <Timer size={12} className="text-[#8fb2c4]" />
+                                                {formatDurationDisplay(totalFilteredSeconds)}
+                                            </div>
+                                            <button
+                                                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                                className={`p-1.5 rounded-lg transition-colors ${isFilterOpen || filterGoalId || filterSubtopicId || filterType ? 'bg-slate-200 text-slate-900' : 'text-slate-400 hover:bg-slate-100'}`}
+                                                title="Filters"
+                                            >
+                                                <Filter size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -799,7 +869,15 @@ export default function LockInPage() {
 
                                 {/* History List (Inside Dropdown) */}
                                 <div className="overflow-y-auto flex-1 divide-y divide-slate-50">
-                                    {isLoadingHistory ? (
+                                    {isProgressFuture ? (
+                                        <div className="p-8 text-center">
+                                            <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                                                <CalendarClock size={24} className="text-slate-300" />
+                                            </div>
+                                            <p className="text-sm font-semibold text-slate-500">We're not a time machine 🚀</p>
+                                            <p className="text-xs text-slate-400 mt-1">Come back on this day to see your progress</p>
+                                        </div>
+                                    ) : isLoadingHistory ? (
                                         <div className="p-8 text-center">
                                             <div className="w-6 h-6 border-2 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-2" />
                                             <p className="text-xs text-slate-400">Loading...</p>
