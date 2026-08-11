@@ -6,7 +6,7 @@ import { getLocalDateString } from '@/lib/dateUtils';
 import { GoalIcon } from '@/components/ui/GoalIcon';
 import {
     Timer, Play, Pause, RotateCcw, Save, ChevronDown, ChevronLeft, Filter, Clock, Trash2,
-    Target, BookOpen, CheckSquare, Zap, X
+    Target, BookOpen, CheckSquare, Zap, X, Lock, CalendarClock
 } from 'lucide-react';
 
 interface TimeSessionRecord {
@@ -14,6 +14,11 @@ interface TimeSessionRecord {
     goalId: string;
     subtopicId: string;
     taskId: string | null;
+    goalName?: string;
+    subtopicName?: string;
+    taskName?: string;
+    goalIcon?: string;
+    subtopicType?: string;
     durationSeconds: number;
     durationDisplay: string;
     date: string;
@@ -21,7 +26,7 @@ interface TimeSessionRecord {
 }
 
 export default function LockInPage() {
-    const { goals, subtopics, tasks } = useGoalTracker();
+    const { goals, subtopics, tasks, selectedDate, isReadOnly, isFuture } = useGoalTracker();
 
     // --- Selection State ---
     const [selectedGoalId, setSelectedGoalId] = useState<string>('');
@@ -39,12 +44,12 @@ export default function LockInPage() {
     const [isSubtopicDropdownOpen, setIsSubtopicDropdownOpen] = useState(false);
     const [isTaskDropdownOpen, setIsTaskDropdownOpen] = useState(false);
     const [isHistoryDropdownOpen, setIsHistoryDropdownOpen] = useState(false);
-    
+
     // --- Filter Dropdown State ---
     const [isFilterGoalDropdownOpen, setIsFilterGoalDropdownOpen] = useState(false);
     const [isFilterSubtopicDropdownOpen, setIsFilterSubtopicDropdownOpen] = useState(false);
     const [isFilterTypeDropdownOpen, setIsFilterTypeDropdownOpen] = useState(false);
-    
+
     const goalDropdownRef = useRef<HTMLDivElement>(null);
     const subtopicDropdownRef = useRef<HTMLDivElement>(null);
     const taskDropdownRef = useRef<HTMLDivElement>(null);
@@ -86,24 +91,26 @@ export default function LockInPage() {
     }, [filterGoalId, subtopics]);
 
     // --- Load History ---
-    const loadHistory = useCallback(async () => {
+    const fetchHistory = useCallback(async () => {
         setIsLoadingHistory(true);
         try {
-            const res = await fetch('/api/time-sessions');
+            const m = selectedDate.getMonth() + 1;
+            const y = selectedDate.getFullYear();
+            const res = await fetch(`/api/time-sessions?month=${m}&year=${y}`);
             if (res.ok) {
                 const data = await res.json();
                 setTimeSessions(data);
             }
         } catch (error) {
-            console.error('Error loading time sessions:', error);
+            console.error('Failed to fetch history:', error);
         } finally {
             setIsLoadingHistory(false);
         }
-    }, []);
+    }, [selectedDate]);
 
     useEffect(() => {
-        loadHistory();
-    }, [loadHistory]);
+        fetchHistory();
+    }, [fetchHistory]);
 
     // Close dropdowns on outside click
     useEffect(() => {
@@ -184,17 +191,23 @@ export default function LockInPage() {
 
         setIsSaving(true);
         try {
+            const payload = {
+                goalId: selectedGoalId,
+                subtopicId: selectedSubtopicId,
+                taskId: selectedTaskId || null,
+                goalName: getGoalName(selectedGoalId),
+                subtopicName: getSubtopicName(selectedSubtopicId),
+                taskName: selectedTaskId ? getTaskName(selectedTaskId) : '',
+                goalIcon: getGoalIcon(selectedGoalId),
+                subtopicType: selectedSubtopic?.type || '',
+                durationSeconds: elapsedSeconds,
+                durationDisplay: formatDurationDisplay(elapsedSeconds),
+                date: getLocalDateString(new Date()),
+            };
             const res = await fetch('/api/time-sessions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    goalId: selectedGoalId,
-                    subtopicId: selectedSubtopicId,
-                    taskId: selectedTaskId || null,
-                    durationSeconds: elapsedSeconds,
-                    durationDisplay: formatDurationDisplay(elapsedSeconds),
-                    date: getLocalDateString(new Date()),
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (res.ok) {
@@ -220,6 +233,21 @@ export default function LockInPage() {
         }
     };
 
+    // Determine if current month
+    const isCurrentMonth = useMemo(() => {
+        const now = new Date();
+        return selectedDate.getMonth() === now.getMonth() && selectedDate.getFullYear() === now.getFullYear();
+    }, [selectedDate]);
+
+    // Reset selections and stop timer when month changes
+    useEffect(() => {
+        setSelectedGoalId('');
+        setSelectedSubtopicId('');
+        setSelectedTaskId('');
+        setIsRunning(false);
+        setElapsedSeconds(0);
+    }, [selectedDate]);
+
     // Reset dependent selections when parent changes
     useEffect(() => {
         setSelectedSubtopicId('');
@@ -237,7 +265,8 @@ export default function LockInPage() {
             if (filterSubtopicId && session.subtopicId !== filterSubtopicId) return false;
             if (filterType) {
                 const sub = subtopics.find(s => s.id === session.subtopicId);
-                if (!sub || sub.type !== filterType) return false;
+                const type = session.subtopicType || sub?.type;
+                if (!type || type !== filterType) return false;
             }
             return true;
         });
@@ -290,17 +319,17 @@ export default function LockInPage() {
                     {/* Selection Dropdowns */}
                     <div className="p-6 md:p-8 border-b border-slate-100">
                         <div className="flex justify-between items-center mb-5">
-                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">What are you working on?</h3>
-                            
+                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{isCurrentMonth ? 'What are you working on?' : isFuture ? 'Timer available when this month arrives' : 'Viewing past month sessions'}</h3>
+
                             {/* History Dropdown Trigger */}
                             <div className="relative" ref={historyDropdownRef}>
                                 <button
                                     onClick={() => setIsHistoryDropdownOpen(!isHistoryDropdownOpen)}
                                     className={`p-2 rounded-xl transition-all border-2 flex items-center gap-2 ${isHistoryDropdownOpen ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-200 hover:text-slate-600 hover:border-slate-300'}`}
-                                    title="View Session History"
+                                    title="View Today's Progress"
                                 >
                                     <Clock size={16} />
-                                    <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline-block">History</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline-block">Progress</span>
                                     {filteredHistory.length > 0 && (
                                         <span className="flex items-center justify-center min-w-[20px] h-[20px] px-1 rounded-full bg-amber-400 text-[10px] font-bold text-slate-900 leading-none">
                                             {filteredHistory.length}
@@ -316,8 +345,8 @@ export default function LockInPage() {
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Category</label>
                                 <button
                                     type="button"
-                                    onClick={() => !isRunning && setIsGoalDropdownOpen(!isGoalDropdownOpen)}
-                                    disabled={isRunning}
+                                    onClick={() => !isRunning && isCurrentMonth && setIsGoalDropdownOpen(!isGoalDropdownOpen)}
+                                    disabled={isRunning || !isCurrentMonth}
                                     className={`w-full flex items-center gap-3 bg-white border-2 rounded-xl px-4 py-3 text-sm font-medium text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isGoalDropdownOpen ? 'border-slate-900' : 'border-slate-200'}`}
                                 >
                                     {selectedGoalId ? (
@@ -357,8 +386,8 @@ export default function LockInPage() {
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Subtopic</label>
                                 <button
                                     type="button"
-                                    onClick={() => !isRunning && selectedGoalId && setIsSubtopicDropdownOpen(!isSubtopicDropdownOpen)}
-                                    disabled={isRunning || !selectedGoalId}
+                                    onClick={() => !isRunning && isCurrentMonth && selectedGoalId && setIsSubtopicDropdownOpen(!isSubtopicDropdownOpen)}
+                                    disabled={isRunning || !selectedGoalId || !isCurrentMonth}
                                     className={`w-full flex items-center gap-3 bg-white border-2 rounded-xl px-4 py-3 text-sm font-medium text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isSubtopicDropdownOpen ? 'border-slate-900' : 'border-slate-200'}`}
                                 >
                                     {selectedSubtopicId ? (
@@ -400,8 +429,8 @@ export default function LockInPage() {
                                 </label>
                                 <button
                                     type="button"
-                                    onClick={() => !isRunning && selectedSubtopicId && filteredTasks.length > 0 && setIsTaskDropdownOpen(!isTaskDropdownOpen)}
-                                    disabled={isRunning || !selectedSubtopicId || filteredTasks.length === 0}
+                                    onClick={() => !isRunning && isCurrentMonth && selectedSubtopicId && filteredTasks.length > 0 && setIsTaskDropdownOpen(!isTaskDropdownOpen)}
+                                    disabled={isRunning || !selectedSubtopicId || filteredTasks.length === 0 || !isCurrentMonth}
                                     className={`w-full flex items-center gap-3 bg-white border-2 rounded-xl px-4 py-3 text-sm font-medium text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isTaskDropdownOpen ? 'border-slate-900' : 'border-slate-200'}`}
                                 >
                                     {selectedTaskId ? (
@@ -465,339 +494,352 @@ export default function LockInPage() {
                     {/* Timer Display */}
                     <div className="p-8 md:p-12 flex flex-col items-center">
                         {/* Animated ring */}
-                        <div className={`relative w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center mb-8 transition-all duration-700 ${isRunning
-                                ? 'bg-gradient-to-br from-slate-50 to-[#8fb2c4]/10 shadow-[0_0_60px_rgba(143,178,196,0.3)]'
-                                : 'bg-slate-50/50'
+                        <div className={`relative w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center mb-8 transition-all duration-700 ${isCurrentMonth && isRunning
+                            ? 'bg-gradient-to-br from-slate-50 to-[#8fb2c4]/10 shadow-[0_0_60px_rgba(143,178,196,0.3)]'
+                            : !isCurrentMonth ? 'bg-slate-100/50' : 'bg-slate-50/50'
                             }`}>
                             {/* Outer ring */}
-                            <div className={`absolute inset-0 rounded-full border-[3px] transition-all duration-700 ${isRunning
-                                    ? 'border-[#8fb2c4] animate-pulse'
-                                    : 'border-slate-200'
+                            <div className={`absolute inset-0 rounded-full border-[3px] transition-all duration-700 ${isCurrentMonth && isRunning
+                                ? 'border-[#8fb2c4] animate-pulse'
+                                : !isCurrentMonth ? 'border-slate-200/60' : 'border-slate-200'
                                 }`} />
                             {/* Inner ring */}
-                            <div className={`absolute inset-3 rounded-full border-2 transition-all duration-700 ${isRunning
-                                    ? 'border-[#8fb2c4]/40'
-                                    : 'border-transparent'
+                            <div className={`absolute inset-3 rounded-full border-2 transition-all duration-700 ${isCurrentMonth && isRunning
+                                ? 'border-[#8fb2c4]/40'
+                                : 'border-transparent'
                                 }`} />
 
                             {/* Time display */}
                             <div className="text-center z-10">
-                                <div className="flex items-baseline gap-1 md:gap-2">
-                                    <span className="text-5xl md:text-7xl font-serif text-slate-900 tracking-tighter tabular-nums">
-                                        {time.hours}
-                                    </span>
-                                    <span className="text-2xl md:text-3xl text-slate-300 font-light">:</span>
-                                    <span className="text-5xl md:text-7xl font-serif text-slate-900 tracking-tighter tabular-nums">
-                                        {time.minutes}
-                                    </span>
-                                    <span className="text-2xl md:text-3xl text-slate-300 font-light">:</span>
-                                    <span className="text-5xl md:text-7xl font-serif text-slate-900 tracking-tighter tabular-nums">
-                                        {time.seconds}
-                                    </span>
-                                </div>
-                                <p className={`text-xs uppercase tracking-[0.3em] mt-3 transition-colors ${isRunning ? 'text-[#8fb2c4] font-semibold' : 'text-slate-400'
-                                    }`}>
-                                    {isRunning ? '● Recording' : elapsedSeconds > 0 ? 'Paused' : 'Ready'}
-                                </p>
+                                {isCurrentMonth ? (
+                                    <>
+                                        <div className="flex items-baseline gap-1 md:gap-2">
+                                            <span className="text-5xl md:text-7xl font-serif text-slate-900 tracking-tighter tabular-nums">
+                                                {time.hours}
+                                            </span>
+                                            <span className="text-2xl md:text-3xl text-slate-300 font-light">:</span>
+                                            <span className="text-5xl md:text-7xl font-serif text-slate-900 tracking-tighter tabular-nums">
+                                                {time.minutes}
+                                            </span>
+                                            <span className="text-2xl md:text-3xl text-slate-300 font-light">:</span>
+                                            <span className="text-5xl md:text-7xl font-serif text-slate-900 tracking-tighter tabular-nums">
+                                                {time.seconds}
+                                            </span>
+                                        </div>
+                                        <p className={`text-xs uppercase tracking-[0.3em] mt-3 transition-colors ${isRunning ? 'text-[#8fb2c4] font-semibold' : 'text-slate-400'
+                                            }`}>
+                                            {isRunning ? '● Recording' : elapsedSeconds > 0 ? 'Paused' : 'Ready'}
+                                        </p>
+                                    </>
+                                ) : isFuture ? (
+                                    <div className="flex flex-col items-center gap-3">
+                                        <CalendarClock size={36} className="text-slate-300" />
+                                        <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Coming Soon</p>
+                                        <p className="text-xs text-slate-400 max-w-[180px] text-center">Switch back to the current month to start tracking</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center gap-3">
+                                        <Lock size={36} className="text-slate-300" />
+                                        <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Read Only</p>
+                                        <p className="text-xs text-slate-400 max-w-[180px] text-center">View your past sessions in Progress</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* Control Buttons */}
-                        <div className="flex items-center gap-4">
-                            {/* Reset */}
-                            <button
-                                onClick={handleReset}
-                                disabled={elapsedSeconds === 0}
-                                className="w-12 h-12 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-slate-400 hover:border-slate-900 hover:text-slate-900 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                                title="Reset"
-                            >
-                                <RotateCcw size={18} />
-                            </button>
+                        {/* Control Buttons - Only show for current month */}
+                        {isCurrentMonth && (
+                            <div className="flex items-center gap-4">
+                                {/* Reset */}
+                                <button
+                                    onClick={handleReset}
+                                    disabled={elapsedSeconds === 0}
+                                    className="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all shadow-lg shadow-red-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                                    title="Reset"
+                                >
+                                    <RotateCcw size={18} />
+                                </button>
 
-                            {/* Start / Pause */}
-                            <button
-                                onClick={handleStartPause}
-                                disabled={!canStart}
-                                className={`w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-lg disabled:opacity-30 disabled:cursor-not-allowed ${isRunning
+                                {/* Start / Pause */}
+                                <button
+                                    onClick={handleStartPause}
+                                    disabled={!canStart}
+                                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-lg disabled:opacity-30 disabled:cursor-not-allowed ${isRunning
                                         ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/30'
                                         : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/30'
-                                    }`}
-                                title={isRunning ? 'Pause' : 'Start'}
-                            >
-                                {isRunning ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
-                            </button>
+                                        }`}
+                                    title={isRunning ? 'Pause' : 'Start'}
+                                >
+                                    {isRunning ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+                                </button>
 
-                            {/* Save */}
-                            <button
-                                onClick={handleSave}
-                                disabled={elapsedSeconds === 0 || isRunning || isSaving}
-                                className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
-                                title="Save & Complete"
-                            >
-                                {isSaving ? (
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <Save size={18} />
-                                )}
-                            </button>
-                        </div>
+                                {/* Save */}
+                                <button
+                                    onClick={handleSave}
+                                    disabled={elapsedSeconds === 0 || isRunning || isSaving}
+                                    className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                                    title="Save & Complete"
+                                >
+                                    {isSaving ? (
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <Save size={18} />
+                                    )}
+                                </button>
+                            </div>
+                        )}
 
-                        {!canStart && (
+                        {isCurrentMonth && !canStart && (
                             <p className="mt-4 text-xs text-slate-400 text-center">
                                 Select a category and subtopic to start the timer
                             </p>
                         )}
                     </div>
-                        {/* History Dropdown Content */}
-            {isHistoryDropdownOpen && (
-                <>
-                {/* Backdrop */}
-                <div 
-className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm z-40 transition-opacity rounded-[2rem]"
-onClick={() => setIsHistoryDropdownOpen(false)}
-                />
-                {/* Drawer */}
-                <div className="absolute top-0 right-0 bottom-0 left-0 w-full flex flex-col bg-white shadow-2xl z-50 transform transition-transform translate-x-0 rounded-[2rem]">
-                    <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
-                        <div className="flex items-center gap-3">
-                            <button
+                    {/* History Dropdown Content */}
+                    {isHistoryDropdownOpen && (
+                        <>
+                            {/* Backdrop */}
+                            <div
+                                className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm z-40 transition-opacity rounded-[2rem]"
                                 onClick={() => setIsHistoryDropdownOpen(false)}
-                                className="p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-colors"
-                                title="Back to Timer"
-                            >
-                                <ChevronLeft size={18} />
-                            </button>
-                            <h3 className="text-base font-semibold text-slate-900">Session History</h3>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#8fb2c4]/10 text-xs font-bold text-slate-700 tabular-nums">
-                                <Timer size={12} className="text-[#8fb2c4]" />
-                                {formatDurationDisplay(totalFilteredSeconds)}
-                            </div>
-                            <button
-                                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className={`p-1.5 rounded-lg transition-colors ${isFilterOpen || filterGoalId || filterSubtopicId || filterType ? 'bg-slate-200 text-slate-900' : 'text-slate-400 hover:bg-slate-100'}`}
-                                title="Filters"
-                            >
-                                <Filter size={14} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Filter Panel (Inside Dropdown) */}
-                    {isFilterOpen && (
-                        <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 shrink-0 relative z-20">
-                            <div className="grid grid-cols-1 gap-3">
-                                <div className="relative" ref={filterGoalDropdownRef}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsFilterGoalDropdownOpen(!isFilterGoalDropdownOpen)}
-                                        className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-slate-900"
-                                    >
-                                        {filterGoalId ? (
-                                            <div className="flex items-center gap-2 truncate">
-                                                <GoalIcon iconName={getGoalIcon(filterGoalId)} className="w-3.5 h-3.5 text-slate-700" />
-                                                <span className="truncate">{getGoalName(filterGoalId)}</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-slate-500">All Categories</span>
-                                        )}
-                                        <ChevronDown size={14} className={`ml-2 text-slate-400 transition-transform flex-shrink-0 ${isFilterGoalDropdownOpen ? 'rotate-180' : ''}`} />
-                                    </button>
-                                    {isFilterGoalDropdownOpen && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto py-1">
-                                            <button
-                                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
-                                                onClick={() => {
-                                                    setFilterGoalId('');
-                                                    setFilterSubtopicId('');
-                                                    setIsFilterGoalDropdownOpen(false);
-                                                }}
-                                            >
-                                                <span className="text-xs text-slate-500 font-medium">All Categories</span>
-                                            </button>
-                                            {goals.map(g => (
-                                                <button
-                                                    key={g.id}
-                                                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
-                                                    onClick={() => {
-                                                        setFilterGoalId(g.id);
-                                                        setFilterSubtopicId('');
-                                                        setIsFilterGoalDropdownOpen(false);
-                                                    }}
-                                                >
-                                                    <GoalIcon iconName={g.icon} className="w-3.5 h-3.5 text-slate-700" />
-                                                    <span className="text-xs text-slate-900 font-medium truncate">{g.name}</span>
-                                                </button>
-                                            ))}
+                            />
+                            {/* Drawer */}
+                            <div className="absolute top-0 right-0 bottom-0 left-0 w-full flex flex-col bg-white shadow-2xl z-50 transform transition-transform translate-x-0 rounded-[2rem]">
+                                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => setIsHistoryDropdownOpen(false)}
+                                            className="p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                                            title="Back to Timer"
+                                        >
+                                            <ChevronLeft size={18} />
+                                        </button>
+                                        <h3 className="text-base font-semibold text-slate-900">Today's Progress</h3>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#8fb2c4]/10 text-xs font-bold text-slate-700 tabular-nums">
+                                            <Timer size={12} className="text-[#8fb2c4]" />
+                                            {formatDurationDisplay(totalFilteredSeconds)}
                                         </div>
+                                        <button
+                                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                            className={`p-1.5 rounded-lg transition-colors ${isFilterOpen || filterGoalId || filterSubtopicId || filterType ? 'bg-slate-200 text-slate-900' : 'text-slate-400 hover:bg-slate-100'}`}
+                                            title="Filters"
+                                        >
+                                            <Filter size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Filter Panel (Inside Dropdown) */}
+                                {isFilterOpen && (
+                                    <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 shrink-0 relative z-20">
+                                        <div className="grid grid-cols-1 gap-3">
+                                            <div className="relative" ref={filterGoalDropdownRef}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsFilterGoalDropdownOpen(!isFilterGoalDropdownOpen)}
+                                                    className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-slate-900"
+                                                >
+                                                    {filterGoalId ? (
+                                                        <div className="flex items-center gap-2 truncate">
+                                                            <GoalIcon iconName={getGoalIcon(filterGoalId)} className="w-3.5 h-3.5 text-slate-700" />
+                                                            <span className="truncate">{getGoalName(filterGoalId)}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-slate-500">All Categories</span>
+                                                    )}
+                                                    <ChevronDown size={14} className={`ml-2 text-slate-400 transition-transform flex-shrink-0 ${isFilterGoalDropdownOpen ? 'rotate-180' : ''}`} />
+                                                </button>
+                                                {isFilterGoalDropdownOpen && (
+                                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto py-1">
+                                                        <button
+                                                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                                                            onClick={() => {
+                                                                setFilterGoalId('');
+                                                                setFilterSubtopicId('');
+                                                                setIsFilterGoalDropdownOpen(false);
+                                                            }}
+                                                        >
+                                                            <span className="text-xs text-slate-500 font-medium">All Categories</span>
+                                                        </button>
+                                                        {goals.map(g => (
+                                                            <button
+                                                                key={g.id}
+                                                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                                                                onClick={() => {
+                                                                    setFilterGoalId(g.id);
+                                                                    setFilterSubtopicId('');
+                                                                    setIsFilterGoalDropdownOpen(false);
+                                                                }}
+                                                            >
+                                                                <GoalIcon iconName={g.icon} className="w-3.5 h-3.5 text-slate-700" />
+                                                                <span className="text-xs text-slate-900 font-medium truncate">{g.name}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="relative" ref={filterSubtopicDropdownRef}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsFilterSubtopicDropdownOpen(!isFilterSubtopicDropdownOpen)}
+                                                        className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-slate-900"
+                                                    >
+                                                        <span className="truncate">{filterSubtopicId ? getSubtopicName(filterSubtopicId) : 'All Subtopics'}</span>
+                                                        <ChevronDown size={14} className={`ml-2 text-slate-400 transition-transform flex-shrink-0 ${isFilterSubtopicDropdownOpen ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                    {isFilterSubtopicDropdownOpen && (
+                                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto py-1">
+                                                            <button
+                                                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                                                                onClick={() => {
+                                                                    setFilterSubtopicId('');
+                                                                    setIsFilterSubtopicDropdownOpen(false);
+                                                                }}
+                                                            >
+                                                                <span className="text-xs text-slate-500 font-medium">All Subtopics</span>
+                                                            </button>
+                                                            {filterSubtopicOptions.map(s => (
+                                                                <button
+                                                                    key={s.id}
+                                                                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                                                                    onClick={() => {
+                                                                        setFilterSubtopicId(s.id);
+                                                                        setIsFilterSubtopicDropdownOpen(false);
+                                                                    }}
+                                                                >
+                                                                    <span className="text-xs text-slate-900 font-medium truncate">{s.name}</span>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="relative" ref={filterTypeDropdownRef}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsFilterTypeDropdownOpen(!isFilterTypeDropdownOpen)}
+                                                        className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-slate-900"
+                                                    >
+                                                        <span className="truncate">
+                                                            {filterType === 'habit' ? 'Habit' : filterType === 'cumulative' ? 'Cumulative' : filterType === 'tasks' ? 'Tasks' : 'All Types'}
+                                                        </span>
+                                                        <ChevronDown size={14} className={`ml-2 text-slate-400 transition-transform flex-shrink-0 ${isFilterTypeDropdownOpen ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                    {isFilterTypeDropdownOpen && (
+                                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-y-auto py-1">
+                                                            {[
+                                                                { value: '', label: 'All Types' },
+                                                                { value: 'habit', label: 'Habit' },
+                                                                { value: 'cumulative', label: 'Cumulative' },
+                                                                { value: 'tasks', label: 'Tasks' },
+                                                            ].map(t => (
+                                                                <button
+                                                                    key={t.value}
+                                                                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                                                                    onClick={() => {
+                                                                        setFilterType(t.value);
+                                                                        setIsFilterTypeDropdownOpen(false);
+                                                                    }}
+                                                                >
+                                                                    <span className={`text-xs font-medium truncate ${t.value === '' ? 'text-slate-500' : 'text-slate-900'}`}>{t.label}</span>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {(filterGoalId || filterSubtopicId || filterType) && (
+                                                <button
+                                                    onClick={() => {
+                                                        setFilterGoalId('');
+                                                        setFilterSubtopicId('');
+                                                        setFilterType('');
+                                                    }}
+                                                    className="text-[10px] uppercase font-bold text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1 transition-colors mt-1"
+                                                >
+                                                    <X size={10} /> Clear Filters
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* History List (Inside Dropdown) */}
+                                <div className="overflow-y-auto flex-1 divide-y divide-slate-50">
+                                    {isLoadingHistory ? (
+                                        <div className="p-8 text-center">
+                                            <div className="w-6 h-6 border-2 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-2" />
+                                            <p className="text-xs text-slate-400">Loading...</p>
+                                        </div>
+                                    ) : filteredHistory.length === 0 ? (
+                                        <div className="p-8 text-center">
+                                            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                                                <Timer size={20} className="text-slate-300" />
+                                            </div>
+                                            <p className="text-sm font-medium text-slate-500">No sessions found</p>
+                                        </div>
+                                    ) : (
+                                        filteredHistory.map((session) => {
+                                            const sessionDate = new Date(session.createdAt);
+                                            const timeStr = sessionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                                            const dateStr = sessionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                                            return (
+                                                <div key={session.id} className="px-5 py-3 hover:bg-slate-50/80 transition-colors group">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div className="flex items-start gap-3 min-w-0 flex-1">
+                                                            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center mt-0.5">
+                                                                <GoalIcon iconName={session.goalIcon || getGoalIcon(session.goalId)} className="w-4 h-4 text-slate-700" />
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                                    <span className="text-sm font-bold text-slate-900 truncate">{session.goalName || getGoalName(session.goalId)}</span>
+                                                                    <span className="text-slate-300">·</span>
+                                                                    <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                                        {typeIcon(session.subtopicType || getSubtopicType(session.subtopicId))}
+                                                                        {session.subtopicName || getSubtopicName(session.subtopicId)}
+                                                                    </span>
+                                                                    {session.taskId && (
+                                                                        <>
+                                                                            <span className="text-slate-300">·</span>
+                                                                            <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wide flex items-center gap-1">
+                                                                                <CheckSquare size={10} />
+                                                                                <span className="truncate max-w-[100px]">{session.taskName || getTaskName(session.taskId)}</span>
+                                                                            </span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">{dateStr} at {timeStr}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                                            <span className="text-xs font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md tabular-nums">
+                                                                {session.durationDisplay}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => setDeleteConfirm(session.id)}
+                                                                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all"
+                                                                title="Delete session"
+                                                            >
+                                                                <Trash2 size={12} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
                                     )}
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="relative" ref={filterSubtopicDropdownRef}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsFilterSubtopicDropdownOpen(!isFilterSubtopicDropdownOpen)}
-                                            className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-slate-900"
-                                        >
-                                            <span className="truncate">{filterSubtopicId ? getSubtopicName(filterSubtopicId) : 'All Subtopics'}</span>
-                                            <ChevronDown size={14} className={`ml-2 text-slate-400 transition-transform flex-shrink-0 ${isFilterSubtopicDropdownOpen ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        {isFilterSubtopicDropdownOpen && (
-                                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto py-1">
-                                                <button
-                                                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
-                                                    onClick={() => {
-                                                        setFilterSubtopicId('');
-                                                        setIsFilterSubtopicDropdownOpen(false);
-                                                    }}
-                                                >
-                                                    <span className="text-xs text-slate-500 font-medium">All Subtopics</span>
-                                                </button>
-                                                {filterSubtopicOptions.map(s => (
-                                                    <button
-                                                        key={s.id}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
-                                                        onClick={() => {
-                                                            setFilterSubtopicId(s.id);
-                                                            setIsFilterSubtopicDropdownOpen(false);
-                                                        }}
-                                                    >
-                                                        <span className="text-xs text-slate-900 font-medium truncate">{s.name}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="relative" ref={filterTypeDropdownRef}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsFilterTypeDropdownOpen(!isFilterTypeDropdownOpen)}
-                                            className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-slate-900"
-                                        >
-                                            <span className="truncate">
-                                                {filterType === 'habit' ? 'Habit' : filterType === 'cumulative' ? 'Cumulative' : filterType === 'tasks' ? 'Tasks' : 'All Types'}
-                                            </span>
-                                            <ChevronDown size={14} className={`ml-2 text-slate-400 transition-transform flex-shrink-0 ${isFilterTypeDropdownOpen ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        {isFilterTypeDropdownOpen && (
-                                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-y-auto py-1">
-                                                {[
-                                                    { value: '', label: 'All Types' },
-                                                    { value: 'habit', label: 'Habit' },
-                                                    { value: 'cumulative', label: 'Cumulative' },
-                                                    { value: 'tasks', label: 'Tasks' },
-                                                ].map(t => (
-                                                    <button
-                                                        key={t.value}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
-                                                        onClick={() => {
-                                                            setFilterType(t.value);
-                                                            setIsFilterTypeDropdownOpen(false);
-                                                        }}
-                                                    >
-                                                        <span className={`text-xs font-medium truncate ${t.value === '' ? 'text-slate-500' : 'text-slate-900'}`}>{t.label}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                {(filterGoalId || filterSubtopicId || filterType) && (
-                                    <button
-                                        onClick={() => {
-                                            setFilterGoalId('');
-                                            setFilterSubtopicId('');
-                                            setFilterType('');
-                                        }}
-                                        className="text-[10px] uppercase font-bold text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1 transition-colors mt-1"
-                                    >
-                                        <X size={10} /> Clear Filters
-                                    </button>
-                                )}
                             </div>
-                        </div>
+                        </>
                     )}
-
-                    {/* History List (Inside Dropdown) */}
-                    <div className="overflow-y-auto flex-1 divide-y divide-slate-50">
-                        {isLoadingHistory ? (
-                            <div className="p-8 text-center">
-                                <div className="w-6 h-6 border-2 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-2" />
-                                <p className="text-xs text-slate-400">Loading...</p>
-                            </div>
-                        ) : filteredHistory.length === 0 ? (
-                            <div className="p-8 text-center">
-                                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
-                                    <Timer size={20} className="text-slate-300" />
-                                </div>
-                                <p className="text-sm font-medium text-slate-500">No sessions found</p>
-                            </div>
-                        ) : (
-                            filteredHistory.map((session) => {
-                                const goalName = getGoalName(session.goalId);
-                                const goalIcon = getGoalIcon(session.goalId);
-                                const subtopicName = getSubtopicName(session.subtopicId);
-                                const subtopicType = getSubtopicType(session.subtopicId);
-                                const taskName = getTaskName(session.taskId);
-                                const sessionDate = new Date(session.createdAt);
-                                const timeStr = sessionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                                const dateStr = sessionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-                                return (
-                                    <div key={session.id} className="px-5 py-3 hover:bg-slate-50/80 transition-colors group">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div className="flex items-start gap-3 min-w-0 flex-1">
-                                                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center mt-0.5">
-                                                    <GoalIcon iconName={goalIcon} className="w-4 h-4 text-slate-700" />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <span className="text-sm font-bold text-slate-900 truncate">{goalName}</span>
-                                                        <span className="text-slate-300">·</span>
-                                                        <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                                            {typeIcon(subtopicType)}
-                                                            {subtopicName}
-                                                        </span>
-                                                        {taskName && (
-                                                            <>
-                                                                <span className="text-slate-300">·</span>
-                                                                <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wide flex items-center gap-1">
-                                                                    <CheckSquare size={10} />
-                                                                    <span className="truncate max-w-[100px]">{taskName}</span>
-                                                                </span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">{dateStr} at {timeStr}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                                                <span className="text-xs font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md tabular-nums">
-                                                    {session.durationDisplay}
-                                                </span>
-                                                <button
-                                                    onClick={() => setDeleteConfirm(session.id)}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all"
-                                                    title="Delete session"
-                                                >
-                                                    <Trash2 size={12} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-                </>
-            )}
                 </div>
 
 
 
-                </div>
+            </div>
 
 
 

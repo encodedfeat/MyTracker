@@ -6,6 +6,11 @@ export interface ITimeSession extends Document {
   goalId: mongoose.Schema.Types.ObjectId;
   subtopicId: mongoose.Schema.Types.ObjectId;
   taskId?: mongoose.Schema.Types.ObjectId;
+  goalName: string;
+  subtopicName: string;
+  taskName?: string;
+  goalIcon: string;
+  subtopicType: string;
   durationSeconds: number; // Total elapsed time in seconds
   durationDisplay: string; // e.g. "1h 30m"
   date: Date;
@@ -32,6 +37,26 @@ const TimeSessionSchema = new Schema<ITimeSession>({
     type: Schema.Types.ObjectId,
     ref: 'Task',
     required: false,
+  },
+  goalName: {
+    type: String,
+    default: '',
+  },
+  subtopicName: {
+    type: String,
+    default: '',
+  },
+  taskName: {
+    type: String,
+    default: '',
+  },
+  goalIcon: {
+    type: String,
+    default: '🎯',
+  },
+  subtopicType: {
+    type: String,
+    default: '',
   },
   durationSeconds: {
     type: Number,

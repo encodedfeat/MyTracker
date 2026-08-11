@@ -35,6 +35,11 @@ export async function GET(request: Request) {
             goalId: s.goalId.toString(),
             subtopicId: s.subtopicId.toString(),
             taskId: s.taskId ? s.taskId.toString() : null,
+            goalName: s.goalName || '',
+            subtopicName: s.subtopicName || '',
+            taskName: s.taskName || '',
+            goalIcon: s.goalIcon || '🎯',
+            subtopicType: s.subtopicType || '',
             durationSeconds: s.durationSeconds,
             durationDisplay: s.durationDisplay,
             date: s.date.toISOString().split('T')[0],
@@ -59,7 +64,7 @@ export async function POST(request: Request) {
         await dbConnect();
         const body = await request.json();
 
-        const { goalId, subtopicId, taskId, durationSeconds, durationDisplay, date } = body;
+        const { goalId, subtopicId, taskId, durationSeconds, durationDisplay, date, goalName, subtopicName, taskName, goalIcon, subtopicType } = body;
 
         if (!goalId || !subtopicId || !durationSeconds || !date) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -70,6 +75,11 @@ export async function POST(request: Request) {
             goalId,
             subtopicId,
             taskId: taskId || undefined,
+            goalName: goalName || '',
+            subtopicName: subtopicName || '',
+            taskName: taskName || '',
+            goalIcon: goalIcon || '🎯',
+            subtopicType: subtopicType || '',
             durationSeconds,
             durationDisplay,
             date: new Date(date),
@@ -81,6 +91,11 @@ export async function POST(request: Request) {
             goalId: timeSession.goalId.toString(),
             subtopicId: timeSession.subtopicId.toString(),
             taskId: timeSession.taskId ? timeSession.taskId.toString() : null,
+            goalName: timeSession.goalName || '',
+            subtopicName: timeSession.subtopicName || '',
+            taskName: timeSession.taskName || '',
+            goalIcon: timeSession.goalIcon || '🎯',
+            subtopicType: timeSession.subtopicType || '',
             durationSeconds: timeSession.durationSeconds,
             durationDisplay: timeSession.durationDisplay,
             date: timeSession.date.toISOString().split('T')[0],
