@@ -851,7 +851,7 @@ export default function LockInPage() {
                                                             </span>
                                                             <button
                                                                 onClick={() => setDeleteConfirm(session.id)}
-                                                                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all"
+                                                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 rounded hover:bg-red-50 text-red-500 md:text-slate-300 hover:text-red-500 transition-all"
                                                                 title="Delete session"
                                                             >
                                                                 <Trash2 size={12} />
