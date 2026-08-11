@@ -32,9 +32,11 @@ export async function GET(request: Request) {
         const serialized = sessions.map((s: any) => ({
             id: s._id.toString(),
             userId: s.userId,
-            goalId: s.goalId.toString(),
-            subtopicId: s.subtopicId.toString(),
+            goalId: s.goalId ? s.goalId.toString() : null,
+            subtopicId: s.subtopicId ? s.subtopicId.toString() : null,
             taskId: s.taskId ? s.taskId.toString() : null,
+            isAdHoc: s.isAdHoc || false,
+            adHocTitle: s.adHocTitle || '',
             goalName: s.goalName || '',
             subtopicName: s.subtopicName || '',
             taskName: s.taskName || '',
@@ -64,17 +66,25 @@ export async function POST(request: Request) {
         await dbConnect();
         const body = await request.json();
 
-        const { goalId, subtopicId, taskId, durationSeconds, durationDisplay, date, goalName, subtopicName, taskName, goalIcon, subtopicType } = body;
+        const { goalId, subtopicId, taskId, durationSeconds, durationDisplay, date, goalName, subtopicName, taskName, goalIcon, subtopicType, isAdHoc, adHocTitle } = body;
 
-        if (!goalId || !subtopicId || !durationSeconds || !date) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        if (isAdHoc) {
+            if (!adHocTitle || !durationSeconds || !date) {
+                return NextResponse.json({ error: 'Missing required fields for ad-hoc session' }, { status: 400 });
+            }
+        } else {
+            if (!goalId || !subtopicId || !durationSeconds || !date) {
+                return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+            }
         }
 
         const timeSession = await TimeSession.create({
             userId: session.user.id,
-            goalId,
-            subtopicId,
+            goalId: goalId || undefined,
+            subtopicId: subtopicId || undefined,
             taskId: taskId || undefined,
+            isAdHoc: isAdHoc || false,
+            adHocTitle: adHocTitle || '',
             goalName: goalName || '',
             subtopicName: subtopicName || '',
             taskName: taskName || '',
@@ -88,9 +98,11 @@ export async function POST(request: Request) {
         const serialized = {
             id: timeSession._id.toString(),
             userId: timeSession.userId,
-            goalId: timeSession.goalId.toString(),
-            subtopicId: timeSession.subtopicId.toString(),
+            goalId: timeSession.goalId ? timeSession.goalId.toString() : null,
+            subtopicId: timeSession.subtopicId ? timeSession.subtopicId.toString() : null,
             taskId: timeSession.taskId ? timeSession.taskId.toString() : null,
+            isAdHoc: timeSession.isAdHoc || false,
+            adHocTitle: timeSession.adHocTitle || '',
             goalName: timeSession.goalName || '',
             subtopicName: timeSession.subtopicName || '',
             taskName: timeSession.taskName || '',

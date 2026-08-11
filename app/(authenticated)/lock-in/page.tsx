@@ -19,6 +19,8 @@ interface TimeSessionRecord {
     taskName?: string;
     goalIcon?: string;
     subtopicType?: string;
+    isAdHoc?: boolean;
+    adHocTitle?: string;
     durationSeconds: number;
     durationDisplay: string;
     date: string;
@@ -32,6 +34,7 @@ export default function LockInPage() {
     const [selectedGoalId, setSelectedGoalId] = useState<string>('');
     const [selectedSubtopicId, setSelectedSubtopicId] = useState<string>('');
     const [selectedTaskId, setSelectedTaskId] = useState<string>('');
+    const [adHocTitle, setAdHocTitle] = useState<string>('');
 
     // --- Timer State ---
     const [isRunning, setIsRunning] = useState(false);
@@ -176,8 +179,10 @@ export default function LockInPage() {
         return `${totalSeconds}s`;
     };
 
+    const canStart = (selectedGoalId && selectedSubtopicId) || adHocTitle.trim().length > 0;
+
     const handleStartPause = () => {
-        if (!selectedGoalId || !selectedSubtopicId) return;
+        if (!canStart) return;
         setIsRunning(prev => !prev);
     };
 
@@ -187,19 +192,23 @@ export default function LockInPage() {
     };
 
     const handleSave = async () => {
-        if (elapsedSeconds === 0 || !selectedGoalId || !selectedSubtopicId) return;
+        if (elapsedSeconds === 0 || !canStart) return;
 
         setIsSaving(true);
         try {
+            const isAdHoc = adHocTitle.trim().length > 0;
+            
             const payload = {
-                goalId: selectedGoalId,
-                subtopicId: selectedSubtopicId,
-                taskId: selectedTaskId || null,
-                goalName: getGoalName(selectedGoalId),
-                subtopicName: getSubtopicName(selectedSubtopicId),
-                taskName: selectedTaskId ? getTaskName(selectedTaskId) : '',
-                goalIcon: getGoalIcon(selectedGoalId),
-                subtopicType: selectedSubtopic?.type || '',
+                goalId: isAdHoc ? null : selectedGoalId,
+                subtopicId: isAdHoc ? null : selectedSubtopicId,
+                taskId: isAdHoc ? null : (selectedTaskId || null),
+                isAdHoc: isAdHoc,
+                adHocTitle: isAdHoc ? adHocTitle.trim() : '',
+                goalName: isAdHoc ? 'Quick Focus' : getGoalName(selectedGoalId),
+                subtopicName: isAdHoc ? adHocTitle.trim() : getSubtopicName(selectedSubtopicId),
+                taskName: isAdHoc ? '' : (selectedTaskId ? getTaskName(selectedTaskId) : ''),
+                goalIcon: isAdHoc ? '⚡' : getGoalIcon(selectedGoalId),
+                subtopicType: isAdHoc ? '' : (selectedSubtopic?.type || ''),
                 durationSeconds: elapsedSeconds,
                 durationDisplay: formatDurationDisplay(elapsedSeconds),
                 date: getLocalDateString(new Date()),
@@ -244,6 +253,7 @@ export default function LockInPage() {
         setSelectedGoalId('');
         setSelectedSubtopicId('');
         setSelectedTaskId('');
+        setAdHocTitle('');
         setIsRunning(false);
         setElapsedSeconds(0);
     }, [selectedDate]);
@@ -252,11 +262,18 @@ export default function LockInPage() {
     useEffect(() => {
         setSelectedSubtopicId('');
         setSelectedTaskId('');
+        if (selectedGoalId) setAdHocTitle('');
     }, [selectedGoalId]);
 
     useEffect(() => {
         setSelectedTaskId('');
     }, [selectedSubtopicId]);
+
+    useEffect(() => {
+        if (adHocTitle.length > 0) {
+            setSelectedGoalId('');
+        }
+    }, [adHocTitle]);
 
     // --- Filtered History ---
     const filteredHistory = useMemo(() => {
@@ -278,7 +295,6 @@ export default function LockInPage() {
     }, [filteredHistory]);
 
     const time = formatTime(elapsedSeconds);
-    const canStart = selectedGoalId && selectedSubtopicId;
 
     // Helper to get names
     const getGoalName = (goalId: string) => goals.find(g => g.id === goalId)?.name || 'Unknown';
@@ -489,6 +505,21 @@ export default function LockInPage() {
                                 )}
                             </div>
                         )}
+
+                        {/* Ad-hoc Quick Focus */}
+                        <div className="mt-6 border-t border-slate-100 pt-6">
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                Or Quick Focus <span className="text-slate-300 font-normal normal-case">(Type a task name to start immediately)</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="What do you want to focus on?"
+                                value={adHocTitle}
+                                onChange={(e) => !isRunning && isCurrentMonth && setAdHocTitle(e.target.value)}
+                                disabled={isRunning || !isCurrentMonth}
+                                className="w-full bg-slate-50 focus:bg-white border-2 border-slate-200 focus:border-slate-900 rounded-xl px-4 py-3 text-sm font-medium transition-colors outline-none disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 placeholder:text-slate-400"
+                            />
+                        </div>
                     </div>
 
                     {/* Timer Display */}

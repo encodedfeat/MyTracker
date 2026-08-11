@@ -3,9 +3,11 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface ITimeSession extends Document {
   userId: string;
-  goalId: mongoose.Schema.Types.ObjectId;
-  subtopicId: mongoose.Schema.Types.ObjectId;
+  goalId?: mongoose.Schema.Types.ObjectId;
+  subtopicId?: mongoose.Schema.Types.ObjectId;
   taskId?: mongoose.Schema.Types.ObjectId;
+  isAdHoc: boolean;
+  adHocTitle: string;
   goalName: string;
   subtopicName: string;
   taskName?: string;
@@ -26,17 +28,25 @@ const TimeSessionSchema = new Schema<ITimeSession>({
   goalId: {
     type: Schema.Types.ObjectId,
     ref: 'Goal',
-    required: true,
+    required: false,
   },
   subtopicId: {
     type: Schema.Types.ObjectId,
     ref: 'Subtopic',
-    required: true,
+    required: false,
   },
   taskId: {
     type: Schema.Types.ObjectId,
     ref: 'Task',
     required: false,
+  },
+  isAdHoc: {
+    type: Boolean,
+    default: false,
+  },
+  adHocTitle: {
+    type: String,
+    default: '',
   },
   goalName: {
     type: String,
