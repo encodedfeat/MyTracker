@@ -338,7 +338,13 @@ export default function LockInPage() {
             const sessionDateStr = getLocalDateString(new Date(session.createdAt));
             if (sessionDateStr !== progressDateString) return false;
 
-            if (filterGoalId && session.goalId !== filterGoalId) return false;
+            if (filterGoalId) {
+                if (filterGoalId === 'quick-focus') {
+                    if (!session.isAdHoc) return false;
+                } else {
+                    if (session.goalId !== filterGoalId) return false;
+                }
+            }
             if (filterSubtopicId && session.subtopicId !== filterSubtopicId) return false;
             if (filterType) {
                 const sub = subtopics.find(s => s.id === session.subtopicId);
@@ -358,8 +364,8 @@ export default function LockInPage() {
     const time = formatTime(displaySeconds);
 
     // Helper to get names
-    const getGoalName = (goalId: string) => goals.find(g => g.id === goalId)?.name || 'Unknown';
-    const getGoalIcon = (goalId: string) => goals.find(g => g.id === goalId)?.icon || '🎯';
+    const getGoalName = (goalId: string) => goalId === 'quick-focus' ? 'Quick Focus' : (goals.find(g => g.id === goalId)?.name || 'Unknown');
+    const getGoalIcon = (goalId: string) => goalId === 'quick-focus' ? '⚡' : (goals.find(g => g.id === goalId)?.icon || '🎯');
     const getSubtopicName = (subId: string) => subtopics.find(s => s.id === subId)?.name || 'Unknown';
     const getSubtopicType = (subId: string) => subtopics.find(s => s.id === subId)?.type || '';
     const getTaskName = (taskId: string | null) => {
@@ -857,6 +863,17 @@ export default function LockInPage() {
                                                             }}
                                                         >
                                                             <span className="text-xs text-slate-500 font-medium">All Categories</span>
+                                                        </button>
+                                                        <button
+                                                            className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                                                            onClick={() => {
+                                                                setFilterGoalId('quick-focus');
+                                                                setFilterSubtopicId('');
+                                                                setIsFilterGoalDropdownOpen(false);
+                                                            }}
+                                                        >
+                                                            <GoalIcon iconName="⚡" className="w-3.5 h-3.5 text-slate-700" />
+                                                            <span className="text-xs text-slate-900 font-medium">Quick Focus</span>
                                                         </button>
                                                         {goals.map(g => (
                                                             <button
