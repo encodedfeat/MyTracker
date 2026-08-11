@@ -6,13 +6,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { HowToUseModal } from '../guide/HowToUseModal';
-import { Home, LayoutDashboard, Settings, HelpCircle, LogOut, User, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, LayoutDashboard, Settings, HelpCircle, LogOut, User, Menu, X, ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import { useGoalTracker } from '@/context/GoalContext';
 
 const navItems = [
     { id: 'home', name: 'Home', icon: Home, href: '/home' },
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
     { id: 'manage', name: 'Manage', icon: Settings, href: '/manage' },
+    { id: 'lock-in', name: 'Lock In', icon: Timer, href: '/lock-in' },
 ];
 
 export function AppHeader() {

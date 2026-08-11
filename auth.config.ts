@@ -17,6 +17,7 @@ export const authConfig: NextAuthConfig = {
                 nextUrl.pathname.startsWith('/home') ||
                 nextUrl.pathname.startsWith('/dashboard') ||
                 nextUrl.pathname.startsWith('/manage') ||
+                nextUrl.pathname.startsWith('/lock-in') ||
                 nextUrl.pathname.startsWith('/help') ||
                 nextUrl.pathname.startsWith('/profile');
 

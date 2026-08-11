@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { CheckCircle2, Circle } from 'lucide-react';
+import { GoalIcon } from '@/components/ui/GoalIcon';
 
 interface Task {
     id: string;
@@ -95,7 +96,7 @@ export function PastMonthTaskListView({ goals, subtopics, tasks }: PastMonthTask
                     return (
                         <div key={goal.id} className="bg-white/40 backdrop-blur-md rounded-xl p-6 border border-white/60 shadow-lg">
                             <div className="flex items-center space-x-3 mb-6">
-                                <span className="text-2xl">{goal.icon}</span>
+                                <GoalIcon iconName={goal.icon} className="w-6 h-6 text-slate-700" />
                                 <h3 className="text-xl font-semibold text-black">{goal.name}</h3>
                             </div>
 
